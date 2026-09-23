@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Cyber Runner 3D - 霓虹極速跑酷</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="game-container">
+    <!-- 3D 渲染畫布 -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- 遊戲抬頭顯示器 (HUD) -->
+    <div id="hud" class="hidden">
+      <div class="hud-top">
+        <div class="hud-left">
+          <div class="metric-card">
+            <span class="label">SCORE</span>
+            <span id="score-display" class="value glow-text">0</span>
+          </div>
+          <div class="metric-card">
+            <span class="label">DISTANCE</span>
+            <span id="distance-display" class="value">0 m</span>
+          </div>
+        </div>
+
+        <!-- 道具狀態進度條 -->
+        <div class="hud-center">
+          <div id="powerup-container">
+            <!-- 動態插入道具計時器 -->
+          </div>
+        </div>
+
+        <div class="hud-right">
+          <div class="metric-card">
+            <span class="label">COINS</span>
+            <div class="coin-value-box">
+              <span class="coin-icon">⬡</span>
+              <span id="coins-display" class="value coin-glow">0</span>
+            </div>
+          </div>
+          <div class="metric-card multiplier-card">
+            <span class="label">MULTIPLIER</span>
+            <span id="multiplier-display" class="value mult-glow">x1</span>
+          </div>
+          <div class="hud-buttons">
+            <button id="sound-btn" class="icon-btn" title="切換音效">🔊</button>
+            <button id="fullscreen-btn" class="icon-btn" title="全螢幕">⛶</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 速度指示條 -->
+      <div class="speed-bar-container">
+        <div id="speed-bar" class="speed-bar-fill"></div>
+      </div>
+
+      <!-- 連擊浮動提示 -->
+      <div id="combo-display" class="combo-text hidden">COMBO x2!</div>
+    </div>
+
+    <!-- 主選單 / 開始畫面 -->
+    <div id="start-screen" class="overlay-screen">
+      <div class="screen-content">
+        <div class="logo-box">
+          <h1 class="glitch-title" data-text="CYBER RUNNER 3D">CYBER RUNNER 3D</h1>
+          <p class="subtitle">霓 虹 極 速 跑 酷</p>
+        </div>
+
+        <div class="controls-guide">
+          <h3>🎮 操作指南</h3>
+          <div class="guide-grid">
+            <div class="guide-item">
+              <span class="key-badge">A</span> / <span class="key-badge">D</span> 或 <span class="key-badge">←</span> <span class="key-badge">→</span>
+              <span class="guide-desc">切換跑道</span>
+            </div>
+            <div class="guide-item">
+              <span class="key-badge">W</span> / <span class="key-badge">↑</span> / <span class="key-badge">SPACE</span>
+              <span class="guide-desc">跳躍翻越</span>
+            </div>
+            <div class="guide-item">
+              <span class="key-badge">S</span> / <span class="key-badge">↓</span>
+              <span class="guide-desc">滑鏟俯衝</span>
+            </div>
+            <div class="guide-item">
+              <span class="key-badge">ESC</span> / <span class="key-badge">P</span>
+              <span class="guide-desc">暫停遊戲</span>
+            </div>
+          </div>
+          <p class="touch-hint">📱 手機/觸控螢幕支援上下左右滑動手勢操作</p>
+        </div>
+
+        <div class="high-score-preview">
+          <span>最高紀錄：</span>
+          <span id="start-high-score" class="glow-text">0</span>
+        </div>
+
+        <button id="start-btn" class="cyber-btn pulse-anim">
+          <span class="btn-text">啟 動 鏈 接 (START)</span>
+          <span class="btn-glitch"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 暫停畫面 -->
+    <div id="pause-screen" class="overlay-screen hidden">
+      <div class="screen-content">
+        <h2 class="section-title">系統暫停 / PAUSED</h2>
+        <div class="btn-group">
+          <button id="resume-btn" class="cyber-btn">繼續遊戲</button>
+          <button id="pause-restart-btn" class="cyber-btn secondary">重新開始</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 遊戲結束結算畫面 -->
+    <div id="game-over-screen" class="overlay-screen hidden">
+      <div class="screen-content">
+        <h2 class="game-over-title">神經鏈接中斷</h2>
+        <p class="game-over-subtitle">CRITICAL COLLISION DETECTED</p>
+
+        <div class="stats-card">
+          <div class="stat-row highlight-row">
+            <span>本局得分</span>
+            <span id="final-score" class="stat-val glow-text">0</span>
+          </div>
+          <div id="new-record-badge" class="new-record hidden">★ NEW HIGH SCORE ★</div>
+          <div class="stat-row">
+            <span>奔跑距離</span>
+            <span id="final-distance" class="stat-val">0 m</span>
+          </div>
+          <div class="stat-row">
+            <span>收集能量晶片</span>
+            <span id="final-coins" class="stat-val coin-glow">0</span>
+          </div>
+          <div class="stat-row">
+            <span>歷史最高得分</span>
+            <span id="final-best-score" class="stat-val">0</span>
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button id="restart-btn" class="cyber-btn pulse-anim">
+            <span class="btn-text">再次重啟 (RETRY)</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 引入 Three.js -->
+  <script src="lib/three.min.js"></script>
+  <!-- 引入遊戲邏輯 -->
+  <script src="game.js"></script>
+</body>
+</html>

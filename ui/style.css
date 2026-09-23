@@ -1,0 +1,494 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  user-select: none;
+}
+
+body, html {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #05070f;
+  font-family: 'Orbitron', 'Rajdhani', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #fff;
+}
+
+#game-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+#game-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ================= HUD ================= */
+#hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 20px 30px;
+  pointer-events: none;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.hud-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.hud-left, .hud-right {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.hud-buttons {
+  display: flex;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.icon-btn {
+  background: rgba(10, 20, 40, 0.7);
+  border: 1px solid rgba(0, 243, 255, 0.4);
+  color: #00f3ff;
+  border-radius: 8px;
+  width: 38px;
+  height: 38px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+}
+
+.icon-btn:hover {
+  background: rgba(0, 243, 255, 0.2);
+  border-color: #00f3ff;
+  box-shadow: 0 0 12px rgba(0, 243, 255, 0.5);
+  transform: scale(1.05);
+}
+
+.metric-card {
+  background: rgba(8, 14, 28, 0.85);
+  border: 1px solid rgba(0, 243, 255, 0.35);
+  border-left: 4px solid #00f3ff;
+  padding: 8px 16px;
+  border-radius: 6px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+}
+
+.metric-card .label {
+  font-size: 0.65rem;
+  letter-spacing: 2px;
+  color: #7997b5;
+  font-weight: 700;
+}
+
+.metric-card .value {
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.coin-value-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.coin-icon {
+  color: #ffbe0b;
+  font-size: 1.2rem;
+  text-shadow: 0 0 8px #ffbe0b;
+}
+
+.glow-text {
+  color: #00f3ff;
+  text-shadow: 0 0 10px rgba(0, 243, 255, 0.8);
+}
+
+.coin-glow {
+  color: #ffbe0b;
+  text-shadow: 0 0 10px rgba(255, 190, 11, 0.8);
+}
+
+.mult-glow {
+  color: #ff0077;
+  text-shadow: 0 0 10px rgba(255, 0, 119, 0.8);
+}
+
+/* 道具計時器 */
+.hud-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+#powerup-container {
+  display: flex;
+  gap: 12px;
+}
+
+.powerup-badge {
+  background: rgba(12, 20, 36, 0.9);
+  border: 1px solid #00f3ff;
+  padding: 6px 14px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 0 10px rgba(0, 243, 255, 0.4);
+  font-size: 0.8rem;
+  animation: fadeIn 0.3s ease;
+}
+
+.powerup-badge.shield {
+  border-color: #00f3ff;
+  color: #00f3ff;
+  box-shadow: 0 0 12px rgba(0, 243, 255, 0.6);
+}
+
+.powerup-badge.magnet {
+  border-color: #ff00ff;
+  color: #ff00ff;
+  box-shadow: 0 0 12px rgba(255, 0, 255, 0.6);
+}
+
+.powerup-badge.nitro {
+  border-color: #ffaa00;
+  color: #ffaa00;
+  box-shadow: 0 0 15px rgba(255, 170, 0, 0.7);
+}
+
+.powerup-badge.multiplier {
+  border-color: #00ff88;
+  color: #00ff88;
+  box-shadow: 0 0 12px rgba(0, 255, 136, 0.6);
+}
+
+.powerup-bar {
+  width: 50px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.powerup-fill {
+  height: 100%;
+  background: currentColor;
+  width: 100%;
+  transition: width 0.1s linear;
+}
+
+/* 速度條 */
+.speed-bar-container {
+  width: 260px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  overflow: hidden;
+  align-self: center;
+}
+
+.speed-bar-fill {
+  height: 100%;
+  width: 20%;
+  background: linear-gradient(90deg, #00f3ff, #ff0055);
+  box-shadow: 0 0 10px #00f3ff;
+  transition: width 0.3s ease;
+}
+
+/* 連擊提示 */
+.combo-text {
+  align-self: center;
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #ffbe0b;
+  text-shadow: 0 0 15px rgba(255, 190, 11, 0.9);
+  transform: scale(1);
+  animation: popScale 0.4s ease;
+}
+
+/* ================= 彈窗與覆蓋畫面 ================= */
+.overlay-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, rgba(10, 18, 35, 0.85) 0%, rgba(3, 6, 15, 0.96) 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  backdrop-filter: blur(12px);
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.screen-content {
+  max-width: 620px;
+  width: 90%;
+  background: rgba(13, 23, 44, 0.92);
+  border: 1px solid rgba(0, 243, 255, 0.4);
+  border-radius: 16px;
+  padding: 35px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  text-align: center;
+  box-shadow: 0 0 40px rgba(0, 243, 255, 0.2), inset 0 0 20px rgba(0, 243, 255, 0.05);
+  position: relative;
+}
+
+.logo-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.glitch-title {
+  font-size: 2.8rem;
+  font-weight: 900;
+  letter-spacing: 4px;
+  color: #fff;
+  text-shadow: 0 0 20px rgba(0, 243, 255, 0.8), -2px -2px 0px #ff0055, 2px 2px 0px #00f3ff;
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  letter-spacing: 8px;
+  color: #00f3ff;
+  margin-top: 6px;
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(0, 243, 255, 0.6);
+}
+
+.controls-guide {
+  width: 100%;
+  background: rgba(5, 10, 22, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 16px 20px;
+}
+
+.controls-guide h3 {
+  font-size: 1rem;
+  color: #8fa7c4;
+  margin-bottom: 12px;
+  letter-spacing: 1px;
+}
+
+.guide-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.guide-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.key-badge {
+  background: #192742;
+  border: 1px solid #00f3ff;
+  color: #00f3ff;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 0.75rem;
+  box-shadow: 0 0 5px rgba(0, 243, 255, 0.3);
+}
+
+.guide-desc {
+  color: #d1e2f7;
+  font-weight: 600;
+}
+
+.touch-hint {
+  font-size: 0.75rem;
+  color: #6a82a0;
+  margin-top: 8px;
+}
+
+.high-score-preview {
+  font-size: 1rem;
+  color: #9cb5d1;
+}
+
+.high-score-preview .glow-text {
+  font-size: 1.3rem;
+  font-weight: 900;
+  margin-left: 6px;
+}
+
+/* 按鈕樣式 */
+.cyber-btn {
+  background: linear-gradient(135deg, #00f3ff 0%, #0088ff 100%);
+  color: #050a17;
+  border: none;
+  border-radius: 8px;
+  padding: 14px 38px;
+  font-family: inherit;
+  font-size: 1.15rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  cursor: pointer;
+  box-shadow: 0 0 25px rgba(0, 243, 255, 0.5);
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.cyber-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 35px rgba(0, 243, 255, 0.8);
+  background: linear-gradient(135deg, #33f6ff 0%, #00aaff 100%);
+}
+
+.cyber-btn.secondary {
+  background: rgba(20, 35, 65, 0.8);
+  border: 1px solid rgba(0, 243, 255, 0.5);
+  color: #00f3ff;
+  box-shadow: none;
+}
+
+.cyber-btn.secondary:hover {
+  background: rgba(0, 243, 255, 0.2);
+  box-shadow: 0 0 20px rgba(0, 243, 255, 0.4);
+}
+
+.pulse-anim {
+  animation: pulseButton 2s infinite;
+}
+
+/* 結算卡片 */
+.game-over-title {
+  font-size: 2.2rem;
+  color: #ff0055;
+  text-shadow: 0 0 25px rgba(255, 0, 85, 0.8);
+  letter-spacing: 3px;
+}
+
+.game-over-subtitle {
+  font-size: 0.85rem;
+  color: #7d8ea6;
+  letter-spacing: 2px;
+}
+
+.stats-card {
+  width: 100%;
+  background: rgba(7, 14, 29, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 18px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.95rem;
+  color: #9cb5d1;
+}
+
+.stat-row.highlight-row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 10px;
+}
+
+.stat-row.highlight-row .stat-val {
+  font-size: 1.8rem;
+}
+
+.stat-val {
+  font-weight: 800;
+  font-size: 1.2rem;
+  color: #ffffff;
+}
+
+.new-record {
+  background: linear-gradient(90deg, #ff0077, #ffbe0b);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 900;
+  padding: 5px 12px;
+  border-radius: 20px;
+  margin: 4px auto;
+  box-shadow: 0 0 15px rgba(255, 0, 119, 0.8);
+  animation: bounce 0.6s infinite alternate;
+}
+
+.btn-group {
+  display: flex;
+  gap: 15px;
+}
+
+.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* 動畫 */
+@keyframes pulseButton {
+  0% { transform: scale(1); box-shadow: 0 0 20px rgba(0, 243, 255, 0.4); }
+  50% { transform: scale(1.03); box-shadow: 0 0 35px rgba(0, 243, 255, 0.8); }
+  100% { transform: scale(1); box-shadow: 0 0 20px rgba(0, 243, 255, 0.4); }
+}
+
+@keyframes popScale {
+  0% { transform: scale(0.5); opacity: 0; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes bounce {
+  from { transform: translateY(0); }
+  to { transform: translateY(-4px); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+  .glitch-title { font-size: 2rem; }
+  .screen-content { padding: 25px 20px; }
+  .guide-grid { grid-template-columns: 1fr; }
+  .hud-top { flex-direction: column; gap: 10px; }
+}
