@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Super Mario Parkour - 超級馬力歐跑酷</title>
+  <title>Super Mario Parkour - 超級馬力歐跑酷 (豪華版)</title>
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -42,11 +42,18 @@
         <span id="lives-display" class="hud-val">♥ × 3</span>
       </div>
 
+      <div class="hud-item power-indicator">
+        <span id="power-badge" class="hud-badge small">NORMAL</span>
+      </div>
+
       <div class="hud-buttons">
         <button id="sound-btn" class="retro-icon-btn" title="靜音/播放">🔊</button>
         <button id="fullscreen-btn" class="retro-icon-btn" title="全螢幕">⛶</button>
       </div>
     </div>
+
+    <!-- 提示框 -->
+    <div id="action-hint" class="action-hint hidden">STAGE CLEAR! +5000 PTS</div>
 
     <!-- 主選單 / 開始畫面 -->
     <div id="start-screen" class="overlay-screen">
@@ -54,11 +61,7 @@
         <div class="mario-logo-box">
           <div class="title-sub">SUPER</div>
           <h1 class="mario-title">MARIO PARKOUR</h1>
-          <div class="title-sub red">超 級 馬 力 歐 跑 酷</div>
-        </div>
-
-        <div class="mario-preview-stage">
-          <div class="pixel-mario-anim"></div>
+          <div class="title-sub red">超 級 馬 力 歐 跑 酷 · 豪 華 版</div>
         </div>
 
         <div class="controls-guide">
@@ -73,15 +76,23 @@
               <span class="guide-desc">跳躍（長按跳得更高）</span>
             </div>
             <div class="guide-item">
-              <span class="key-badge">S</span> / <span class="key-badge">↓</span>
-              <span class="guide-desc">下蹲 / 俯身滑行</span>
+              <span class="key-badge">SHIFT</span>
+              <span class="guide-desc">衝刺狂奔（跑速 +50%）</span>
             </div>
             <div class="guide-item">
-              <span class="key-badge">踩踏怪獸</span>
-              <span class="guide-desc">自空中落下踩扁栗寶寶與烏龜</span>
+              <span class="key-badge">F</span> / <span class="key-badge">J</span>
+              <span class="guide-desc">發射彈跳火球（火焰形態）</span>
+            </div>
+            <div class="guide-item">
+              <span class="key-badge">S</span> / <span class="key-badge">↓</span>
+              <span class="guide-desc">下蹲 / 滑行穿過窄道</span>
+            </div>
+            <div class="guide-item">
+              <span class="key-badge">踩怪</span>
+              <span class="guide-desc">落下踩扁栗寶寶與烏龜借力反彈</span>
             </div>
           </div>
-          <p class="guide-tip">★ 頂擊 [?] 磚塊可獲取金幣、超級蘑菇（變大）與無敵星！</p>
+          <p class="guide-tip">★ 頂擊 [?] 磚塊獲取超級蘑菇變大、火焰花射擊火球！每 500m 挑戰終點過關旗杆！</p>
         </div>
 
         <div class="high-score-preview">
@@ -125,6 +136,10 @@
           <div class="stat-row">
             <span>收集金幣</span>
             <span id="final-coins" class="stat-val">0</span>
+          </div>
+          <div class="stat-row">
+            <span>到達世界</span>
+            <span id="final-world" class="stat-val">1 - 1</span>
           </div>
           <div class="stat-row">
             <span>歷史最高紀錄</span>
