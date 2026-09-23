@@ -3,130 +3,119 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Cyber Runner 3D - 霓虹極速跑酷</title>
+  <title>Super Mario Parkour - 超級馬力歐跑酷</title>
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@700&display=swap" rel="stylesheet">
 </head>
 <body>
   <div id="game-container">
-    <!-- 3D 渲染畫布 -->
+    <!-- 2D 像素遊戲畫布 -->
     <canvas id="game-canvas"></canvas>
 
-    <!-- 遊戲抬頭顯示器 (HUD) -->
+    <!-- 復古馬力歐 HUD -->
     <div id="hud" class="hidden">
-      <div class="hud-top">
-        <div class="hud-left">
-          <div class="metric-card">
-            <span class="label">SCORE</span>
-            <span id="score-display" class="value glow-text">0</span>
-          </div>
-          <div class="metric-card">
-            <span class="label">DISTANCE</span>
-            <span id="distance-display" class="value">0 m</span>
-          </div>
-        </div>
-
-        <!-- 道具狀態進度條 -->
-        <div class="hud-center">
-          <div id="powerup-container">
-            <!-- 動態插入道具計時器 -->
-          </div>
-        </div>
-
-        <div class="hud-right">
-          <div class="metric-card">
-            <span class="label">COINS</span>
-            <div class="coin-value-box">
-              <span class="coin-icon">⬡</span>
-              <span id="coins-display" class="value coin-glow">0</span>
-            </div>
-          </div>
-          <div class="metric-card multiplier-card">
-            <span class="label">MULTIPLIER</span>
-            <span id="multiplier-display" class="value mult-glow">x1</span>
-          </div>
-          <div class="hud-buttons">
-            <button id="sound-btn" class="icon-btn" title="切換音效">🔊</button>
-            <button id="fullscreen-btn" class="icon-btn" title="全螢幕">⛶</button>
-          </div>
-        </div>
+      <div class="hud-item">
+        <span class="hud-label">MARIO</span>
+        <span id="score-display" class="hud-val">000000</span>
       </div>
 
-      <!-- 速度指示條 -->
-      <div class="speed-bar-container">
-        <div id="speed-bar" class="speed-bar-fill"></div>
+      <div class="hud-item coin-box">
+        <span class="coin-sprite">🪙</span>
+        <span class="coin-x">×</span>
+        <span id="coins-display" class="hud-val">00</span>
       </div>
 
-      <!-- 連擊浮動提示 -->
-      <div id="combo-display" class="combo-text hidden">COMBO x2!</div>
+      <div class="hud-item">
+        <span class="hud-label">WORLD</span>
+        <span id="world-display" class="hud-val">1 - 1</span>
+      </div>
+
+      <div class="hud-item">
+        <span class="hud-label">DISTANCE</span>
+        <span id="distance-display" class="hud-val">0m</span>
+      </div>
+
+      <div class="hud-item lives-box">
+        <span class="hud-label">LIVES</span>
+        <span id="lives-display" class="hud-val">♥ × 3</span>
+      </div>
+
+      <div class="hud-buttons">
+        <button id="sound-btn" class="retro-icon-btn" title="靜音/播放">🔊</button>
+        <button id="fullscreen-btn" class="retro-icon-btn" title="全螢幕">⛶</button>
+      </div>
     </div>
 
     <!-- 主選單 / 開始畫面 -->
     <div id="start-screen" class="overlay-screen">
-      <div class="screen-content">
-        <div class="logo-box">
-          <h1 class="glitch-title" data-text="CYBER RUNNER 3D">CYBER RUNNER 3D</h1>
-          <p class="subtitle">霓 虹 極 速 跑 酷</p>
+      <div class="screen-content retro-card">
+        <div class="mario-logo-box">
+          <div class="title-sub">SUPER</div>
+          <h1 class="mario-title">MARIO PARKOUR</h1>
+          <div class="title-sub red">超 級 馬 力 歐 跑 酷</div>
+        </div>
+
+        <div class="mario-preview-stage">
+          <div class="pixel-mario-anim"></div>
         </div>
 
         <div class="controls-guide">
-          <h3>🎮 操作指南</h3>
+          <h3>🕹️ 冒險操作指南</h3>
           <div class="guide-grid">
             <div class="guide-item">
               <span class="key-badge">A</span> / <span class="key-badge">D</span> 或 <span class="key-badge">←</span> <span class="key-badge">→</span>
-              <span class="guide-desc">切換跑道</span>
+              <span class="guide-desc">左右奔跑移動</span>
             </div>
             <div class="guide-item">
               <span class="key-badge">W</span> / <span class="key-badge">↑</span> / <span class="key-badge">SPACE</span>
-              <span class="guide-desc">跳躍翻越</span>
+              <span class="guide-desc">跳躍（長按跳得更高）</span>
             </div>
             <div class="guide-item">
               <span class="key-badge">S</span> / <span class="key-badge">↓</span>
-              <span class="guide-desc">滑鏟俯衝</span>
+              <span class="guide-desc">下蹲 / 俯身滑行</span>
             </div>
             <div class="guide-item">
-              <span class="key-badge">ESC</span> / <span class="key-badge">P</span>
-              <span class="guide-desc">暫停遊戲</span>
+              <span class="key-badge">踩踏怪獸</span>
+              <span class="guide-desc">自空中落下踩扁栗寶寶與烏龜</span>
             </div>
           </div>
-          <p class="touch-hint">📱 手機/觸控螢幕支援上下左右滑動手勢操作</p>
+          <p class="guide-tip">★ 頂擊 [?] 磚塊可獲取金幣、超級蘑菇（變大）與無敵星！</p>
         </div>
 
         <div class="high-score-preview">
-          <span>最高紀錄：</span>
-          <span id="start-high-score" class="glow-text">0</span>
+          <span>最高歷史得分：</span>
+          <span id="start-high-score">000000</span>
         </div>
 
-        <button id="start-btn" class="cyber-btn pulse-anim">
-          <span class="btn-text">啟 動 鏈 接 (START)</span>
-          <span class="btn-glitch"></span>
+        <button id="start-btn" class="mario-btn pulse-anim">
+          <span>START GAME (開始冒險)</span>
         </button>
       </div>
     </div>
 
     <!-- 暫停畫面 -->
     <div id="pause-screen" class="overlay-screen hidden">
-      <div class="screen-content">
-        <h2 class="section-title">系統暫停 / PAUSED</h2>
+      <div class="screen-content retro-card">
+        <h2 class="section-title">PAUSED (暫停中)</h2>
         <div class="btn-group">
-          <button id="resume-btn" class="cyber-btn">繼續遊戲</button>
-          <button id="pause-restart-btn" class="cyber-btn secondary">重新開始</button>
+          <button id="resume-btn" class="mario-btn">繼續冒險</button>
+          <button id="pause-restart-btn" class="mario-btn yellow">重新開始</button>
         </div>
       </div>
     </div>
 
     <!-- 遊戲結束結算畫面 -->
     <div id="game-over-screen" class="overlay-screen hidden">
-      <div class="screen-content">
-        <h2 class="game-over-title">神經鏈接中斷</h2>
-        <p class="game-over-subtitle">CRITICAL COLLISION DETECTED</p>
+      <div class="screen-content retro-card">
+        <h2 class="game-over-title">GAME OVER</h2>
+        <p class="game-over-subtitle">冒險中斷！</p>
 
         <div class="stats-card">
-          <div class="stat-row highlight-row">
-            <span>本局得分</span>
-            <span id="final-score" class="stat-val glow-text">0</span>
+          <div class="stat-row">
+            <span>本次得分</span>
+            <span id="final-score" class="stat-val yellow-text">0</span>
           </div>
           <div id="new-record-badge" class="new-record hidden">★ NEW HIGH SCORE ★</div>
           <div class="stat-row">
@@ -134,27 +123,24 @@
             <span id="final-distance" class="stat-val">0 m</span>
           </div>
           <div class="stat-row">
-            <span>收集能量晶片</span>
-            <span id="final-coins" class="stat-val coin-glow">0</span>
+            <span>收集金幣</span>
+            <span id="final-coins" class="stat-val">0</span>
           </div>
           <div class="stat-row">
-            <span>歷史最高得分</span>
+            <span>歷史最高紀錄</span>
             <span id="final-best-score" class="stat-val">0</span>
           </div>
         </div>
 
         <div class="btn-group">
-          <button id="restart-btn" class="cyber-btn pulse-anim">
-            <span class="btn-text">再次重啟 (RETRY)</span>
+          <button id="restart-btn" class="mario-btn pulse-anim">
+            <span>TRY AGAIN (再來一局)</span>
           </button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- 引入 Three.js -->
-  <script src="lib/three.min.js"></script>
-  <!-- 引入遊戲邏輯 -->
   <script src="game.js"></script>
 </body>
 </html>

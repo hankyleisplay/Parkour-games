@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "CyberRunner3D",
+  "productName": "MarioParkour",
   "version": "0.1.0",
-  "identifier": "com.hankyleisplay.cyberrunner3d",
+  "identifier": "com.hankyleisplay.marioparkour",
   "build": {
     "frontendDist": "../ui"
   },
@@ -10,11 +10,11 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "Cyber Runner 3D - 霓虹極速跑酷",
+        "title": "Super Mario Parkour - 超級馬力歐跑酷",
         "width": 1280,
-        "height": 768,
+        "height": 720,
         "minWidth": 800,
-        "minHeight": 600,
+        "minHeight": 500,
         "resizable": true,
         "fullscreen": false,
         "center": true

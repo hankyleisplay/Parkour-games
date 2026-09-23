@@ -1,7 +1,7 @@
 [package]
-name = "parkour-games"
+name = "mario-parkour"
 version = "0.1.0"
-description = "Cyber Runner 3D - 霓虹極速跑酷 (Tauri + Rust)"
+description = "Super Mario Parkour - 超級馬力歐跑酷 (Tauri + Rust)"
 authors = ["hankyleisplay <hankyleisplay@gmail.com>"]
 edition = "2021"
 
@@ -14,5 +14,5 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
 [lib]
-name = "parkour_games_lib"
+name = "mario_parkour_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]

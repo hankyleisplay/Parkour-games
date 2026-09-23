@@ -1,0 +1,14 @@
+{
+  "name": "mario-parkour",
+  "version": "0.1.0",
+  "description": "Super Mario Parkour - 超級馬力歐跑酷 (Tauri + Rust)",
+  "private": true,
+  "scripts": {
+    "tauri": "tauri",
+    "build": "tauri build",
+    "dev": "tauri dev"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.0.0"
+  }
+}

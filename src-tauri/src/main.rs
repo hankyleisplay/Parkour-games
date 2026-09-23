@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    parkour_games_lib::run();
+    mario_parkour_lib::run();
 }

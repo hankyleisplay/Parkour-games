@@ -1,18 +1,18 @@
 /**
- * Cyber Runner 3D - 霓虹極速跑酷
- * 核心遊戲引擎與 Three.js 3D 渲染系統
+ * Super Mario Parkour - 超級馬力歐跑酷
+ * 橫向捲軸經典平台物理引擎、8-Bit 晶片音樂、怪獸踩踏與動態關卡生成系統
  */
 
 // ==========================================
-// 1. 音效與音樂合成系統 (Web Audio API)
+// 1. 8-Bit 晶片音效合成器 (Web Audio API)
 // ==========================================
-class SoundSystem {
+class RetroAudio {
   constructor() {
     this.ctx = null;
     this.isMuted = false;
+    this.masterGain = null;
     this.bgmTimer = null;
     this.bgmStep = 0;
-    this.masterGain = null;
   }
 
   init() {
@@ -21,165 +21,182 @@ class SoundSystem {
     if (!AudioContext) return;
     this.ctx = new AudioContext();
     this.masterGain = this.ctx.createGain();
-    this.masterGain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+    this.masterGain.gain.setValueAtTime(0.25, this.ctx.currentTime);
     this.masterGain.connect(this.ctx.destination);
   }
 
   toggleMute() {
     this.isMuted = !this.isMuted;
-    if (this.masterGain) {
-      this.masterGain.gain.setValueAtTime(this.isMuted ? 0 : 0.3, this.ctx ? this.ctx.currentTime : 0);
+    if (this.masterGain && this.ctx) {
+      this.masterGain.gain.setValueAtTime(this.isMuted ? 0 : 0.25, this.ctx.currentTime);
     }
     return !this.isMuted;
   }
 
+  // 跳躍音效 (方波音調快速上升)
   playJump() {
     if (!this.ctx || this.isMuted) return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(140, now);
+    osc.frequency.exponentialRampToValueAtTime(600, now + 0.16);
+
+    gain.gain.setValueAtTime(0.3, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.16);
+
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start(now);
+    osc.stop(now + 0.16);
+  }
+
+  // 吃金幣雙音叮咚 (B5 -> E6)
+  playCoin() {
+    if (!this.ctx || this.isMuted) return;
+    const now = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
     osc.type = 'sine';
+    osc.frequency.setValueAtTime(987.77, now);
+    osc.frequency.setValueAtTime(1318.51, now + 0.08);
+
+    gain.gain.setValueAtTime(0.35, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.28);
+
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start(now);
+    osc.stop(now + 0.28);
+  }
+
+  // 頂擊磚塊咚聲
+  playBump() {
+    if (!this.ctx || this.isMuted) return;
     const now = this.ctx.currentTime;
-    osc.frequency.setValueAtTime(180, now);
-    osc.frequency.exponentialRampToValueAtTime(540, now + 0.18);
-    gain.gain.setValueAtTime(0.5, now);
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(260, now);
+    osc.frequency.exponentialRampToValueAtTime(60, now + 0.1);
+
+    gain.gain.setValueAtTime(0.4, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start(now);
+    osc.stop(now + 0.1);
+  }
+
+  // 頂碎磚塊破裂聲
+  playBreak() {
+    if (!this.ctx || this.isMuted) return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(400, now);
+    osc.frequency.exponentialRampToValueAtTime(80, now + 0.2);
+
+    gain.gain.setValueAtTime(0.4, now);
     gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+
     osc.connect(gain);
     gain.connect(this.masterGain);
     osc.start(now);
     osc.stop(now + 0.2);
   }
 
-  playSlide() {
+  // 踩怪 (Stomp) 爆裂彈跳聲
+  playStomp() {
     if (!this.ctx || this.isMuted) return;
     const now = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(320, now);
-    osc.frequency.exponentialRampToValueAtTime(80, now + 0.25);
-    gain.gain.setValueAtTime(0.4, now);
-    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(220, now);
+    osc.frequency.exponentialRampToValueAtTime(50, now + 0.12);
+
+    gain.gain.setValueAtTime(0.5, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+
     osc.connect(gain);
     gain.connect(this.masterGain);
     osc.start(now);
-    osc.stop(now + 0.25);
+    osc.stop(now + 0.12);
   }
 
-  playCoin() {
-    if (!this.ctx || this.isMuted) return;
-    const now = this.ctx.currentTime;
-    const osc1 = this.ctx.createOscillator();
-    const osc2 = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-
-    osc1.type = 'sine';
-    osc2.type = 'sine';
-    osc1.frequency.setValueAtTime(987.77, now); // B5
-    osc2.frequency.setValueAtTime(1318.51, now + 0.08); // E6
-
-    gain.gain.setValueAtTime(0.3, now);
-    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.22);
-
-    osc1.connect(gain);
-    osc2.connect(gain);
-    gain.connect(this.masterGain);
-
-    osc1.start(now);
-    osc1.stop(now + 0.1);
-    osc2.start(now + 0.08);
-    osc2.stop(now + 0.22);
-  }
-
+  // 吃蘑菇變大上升琶音
   playPowerup() {
     if (!this.ctx || this.isMuted) return;
     const now = this.ctx.currentTime;
-    const notes = [440, 554.37, 659.25, 880];
-    notes.forEach((freq, idx) => {
+    const freqs = [330, 392, 659, 523, 587, 784];
+    freqs.forEach((f, i) => {
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
       osc.type = 'triangle';
-      osc.frequency.setValueAtTime(freq, now + idx * 0.06);
-      gain.gain.setValueAtTime(0.3, now + idx * 0.06);
-      gain.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.06 + 0.15);
+      osc.frequency.setValueAtTime(f, now + i * 0.05);
+      gain.gain.setValueAtTime(0.3, now + i * 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.05 + 0.12);
       osc.connect(gain);
       gain.connect(this.masterGain);
-      osc.start(now + idx * 0.06);
-      osc.stop(now + idx * 0.06 + 0.15);
+      osc.start(now + i * 0.05);
+      osc.stop(now + i * 0.05 + 0.12);
     });
   }
 
-  playHit() {
+  // 死亡 Game Over 旋律
+  playDeath() {
     if (!this.ctx || this.isMuted) return;
     const now = this.ctx.currentTime;
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-    osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(140, now);
-    osc.frequency.exponentialRampToValueAtTime(30, now + 0.35);
-    gain.gain.setValueAtTime(0.7, now);
-    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
-    osc.connect(gain);
-    gain.connect(this.masterGain);
-    osc.start(now);
-    osc.stop(now + 0.35);
+    const notes = [500, 400, 300, 250, 180];
+    notes.forEach((f, i) => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(f, now + i * 0.09);
+      gain.gain.setValueAtTime(0.35, now + i * 0.09);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.09 + 0.15);
+      osc.connect(gain);
+      gain.connect(this.masterGain);
+      osc.start(now + i * 0.09);
+      osc.stop(now + i * 0.09 + 0.15);
+    });
   }
 
-  playShieldBreak() {
-    if (!this.ctx || this.isMuted) return;
-    const now = this.ctx.currentTime;
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(600, now);
-    osc.frequency.exponentialRampToValueAtTime(150, now + 0.3);
-    gain.gain.setValueAtTime(0.5, now);
-    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-    osc.connect(gain);
-    gain.connect(this.masterGain);
-    osc.start(now);
-    osc.stop(now + 0.3);
-  }
-
+  // 經典馬力歐 Overworld 輕快背景音樂合成
   startBgm() {
     if (!this.ctx || this.bgmTimer) return;
-    const tempo = 126;
+    const tempo = 140;
     const sixteenth = (60 / tempo) / 4;
-    const bassline = [110, 110, 130.81, 110, 146.83, 110, 164.81, 130.81];
+
+    // 經典歡樂 8-Bit 旋律片段
+    const melody = [
+      659.25, 659.25, 0, 659.25, 0, 523.25, 659.25, 0,
+      783.99, 0, 0, 0, 392.00, 0, 0, 0,
+      523.25, 0, 0, 392.00, 0, 0, 329.63, 0,
+      0, 440.00, 0, 493.88, 0, 466.16, 440.00, 0
+    ];
 
     this.bgmTimer = setInterval(() => {
       if (this.isMuted || !this.ctx) return;
       const now = this.ctx.currentTime;
-      const step = this.bgmStep % 16;
+      const freq = melody[this.bgmStep % melody.length];
       this.bgmStep++;
 
-      // 低音合成電音 Bass
-      if (step % 2 === 0) {
+      if (freq > 0) {
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-        const noteIndex = Math.floor(step / 2) % bassline.length;
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(bassline[noteIndex] / 2, now);
-        gain.gain.setValueAtTime(0.12, now);
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(0.08, now);
         gain.gain.exponentialRampToValueAtTime(0.001, now + sixteenth * 1.5);
         osc.connect(gain);
         gain.connect(this.masterGain);
         osc.start(now);
-        osc.stop(now + sixteenth * 1.8);
-      }
-
-      // 電子鼓點 Kick (每拍)
-      if (step % 4 === 0) {
-        const kickOsc = this.ctx.createOscillator();
-        const kickGain = this.ctx.createGain();
-        kickOsc.type = 'sine';
-        kickOsc.frequency.setValueAtTime(150, now);
-        kickOsc.frequency.exponentialRampToValueAtTime(35, now + 0.12);
-        kickGain.gain.setValueAtTime(0.35, now);
-        kickGain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
-        kickOsc.connect(kickGain);
-        kickGain.connect(this.masterGain);
-        kickOsc.start(now);
-        kickOsc.stop(now + 0.12);
+        osc.stop(now + sixteenth * 1.6);
       }
     }, sixteenth * 1000);
   }
@@ -193,851 +210,444 @@ class SoundSystem {
 }
 
 // ==========================================
-// 2. 常數與設定
+// 2. 常數與圖塊規格
 // ==========================================
-const LANES = [-3.2, 0, 3.2];
-const LANE_WIDTH = 3.2;
-const GRAVITY = 46;
-const JUMP_FORCE = 15.5;
-const SLIDE_DURATION = 0.65;
-const BASE_SPEED = 24;
-const MAX_SPEED = 56;
-const SPEED_ACCEL = 0.55; // 每跑 100 公尺增加的速度
-const SEGMENT_LENGTH = 70;
-const VISIBLE_SEGMENTS = 6;
-
-// 道具類型
-const POWERUP_TYPES = {
-  SHIELD: { name: 'SHIELD', color: 0x00f3ff, duration: 12, label: '護盾' },
-  MAGNET: { name: 'MAGNET', color: 0xff00ff, duration: 10, label: '磁吸' },
-  NITRO: { name: 'NITRO', color: 0xffaa00, duration: 7, label: '極速' },
-  MULTIPLIER: { name: 'MULTIPLIER', color: 0x00ff88, duration: 12, label: '2x 積分' },
-};
+const TILE_SIZE = 32;
+const GRAVITY = 1750;
+const ACCEL = 1400;
+const MAX_RUN_SPEED = 320;
+const FRICTION = 1100;
+const JUMP_FORCE = -640;
 
 // ==========================================
-// 3. 遊戲主角 (Player)
+// 3. 玩家角色 (Mario)
 // ==========================================
-class Player {
-  constructor(scene) {
-    this.scene = scene;
-    this.mesh = new THREE.Group();
-
-    // 當前狀態
-    this.currentLane = 1; // 0: 左, 1: 中, 2: 右
-    this.targetX = LANES[this.currentLane];
-    this.y = 0;
-    this.velocityY = 0;
-    this.isJumping = false;
-    this.isSliding = false;
-    this.slideTimer = 0;
-    this.runAnimTime = 0;
-    this.hasShield = false;
-    this.shieldMesh = null;
-
-    // 碰撞盒參數 (世界坐標寬高深)
-    this.box = new THREE.Box3();
-
-    this.createModel();
-    scene.add(this.mesh);
+class Mario {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.vx = 0;
+    this.vy = 0;
+    this.width = 24;
+    this.height = 32; // Small 狀態為 32，Super 狀態為 54
+    this.isGrounded = false;
+    this.facing = 1; // 1: 右, -1: 左
+    this.isSuper = false; // 是否吃到超級蘑菇
+    this.isStar = false; // 是否無敵星狀態
+    this.starTimer = 0;
+    this.invulnerableTimer = 0; // 受傷無敵閃爍時間
+    this.isDucking = false;
+    this.walkAnimTime = 0;
   }
 
-  createModel() {
-    // 賽博龐克風格流線型角色
-    const bodyMat = new THREE.MeshStandardMaterial({
-      color: 0x111c30,
-      roughness: 0.3,
-      metalness: 0.8
-    });
-    const neonCyanMat = new THREE.MeshBasicMaterial({ color: 0x00f3ff });
-    const neonOrangeMat = new THREE.MeshBasicMaterial({ color: 0xff4400 });
-
-    // 軀幹
-    const torsoGeo = new THREE.BoxGeometry(0.8, 1.1, 0.5);
-    this.torso = new THREE.Mesh(torsoGeo, bodyMat);
-    this.torso.position.y = 1.35;
-    this.mesh.add(this.torso);
-
-    // 胸口霓虹核心
-    const coreGeo = new THREE.BoxGeometry(0.3, 0.4, 0.52);
-    const core = new THREE.Mesh(coreGeo, neonCyanMat);
-    this.torso.add(core);
-
-    // 頭部
-    const headGeo = new THREE.BoxGeometry(0.55, 0.55, 0.55);
-    this.head = new THREE.Mesh(headGeo, bodyMat);
-    this.head.position.y = 0.85;
-    this.torso.add(this.head);
-
-    // 霓虹面罩 Visor
-    const visorGeo = new THREE.BoxGeometry(0.48, 0.2, 0.58);
-    const visor = new THREE.Mesh(visorGeo, neonOrangeMat);
-    visor.position.set(0, 0.05, 0.02);
-    this.head.add(visor);
-
-    // 手臂 (左右)
-    const armGeo = new THREE.BoxGeometry(0.24, 0.85, 0.24);
-    this.leftArm = new THREE.Mesh(armGeo, bodyMat);
-    this.leftArm.position.set(-0.55, 0.1, 0);
-    this.torso.add(this.leftArm);
-
-    this.rightArm = new THREE.Mesh(armGeo, bodyMat);
-    this.rightArm.position.set(0.55, 0.1, 0);
-    this.torso.add(this.rightArm);
-
-    // 腿部 (左右)
-    const legGeo = new THREE.BoxGeometry(0.3, 0.9, 0.3);
-    this.leftLeg = new THREE.Mesh(legGeo, bodyMat);
-    this.leftLeg.position.set(-0.25, -0.9, 0);
-    this.torso.add(this.leftLeg);
-
-    this.rightLeg = new THREE.Mesh(legGeo, bodyMat);
-    this.rightLeg.position.set(0.25, -0.9, 0);
-    this.torso.add(this.rightLeg);
-
-    // 護盾光罩 (預設隱藏)
-    const shieldGeo = new THREE.SphereGeometry(1.6, 24, 24);
-    const shieldMat = new THREE.MeshBasicMaterial({
-      color: 0x00f3ff,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.5
-    });
-    this.shieldMesh = new THREE.Mesh(shieldGeo, shieldMat);
-    this.shieldMesh.position.y = 1.2;
-    this.shieldMesh.visible = false;
-    this.mesh.add(this.shieldMesh);
-
-    // 投射陰影
-    this.mesh.traverse(child => {
-      if (child.isMesh) {
-        child.castShadow = true;
-      }
-    });
-  }
-
-  setShield(active) {
-    this.hasShield = active;
-    if (this.shieldMesh) {
-      this.shieldMesh.visible = active;
+  makeSuper() {
+    if (!this.isSuper) {
+      this.isSuper = true;
+      this.y -= 22;
+      this.height = 54;
     }
   }
 
-  changeLane(dir) {
-    // dir: -1 (左) 或 +1 (右)
-    const nextLane = this.currentLane + dir;
-    if (nextLane >= 0 && nextLane < LANES.length) {
-      this.currentLane = nextLane;
-      this.targetX = LANES[this.currentLane];
+  makeSmall() {
+    this.isSuper = false;
+    this.height = 32;
+    this.invulnerableTimer = 2.0; // 2秒無敵閃爍
+  }
+
+  setStar(duration = 10) {
+    this.isStar = true;
+    this.starTimer = duration;
+  }
+
+  update(dt, input) {
+    // 1. 無敵與星星計時
+    if (this.invulnerableTimer > 0) {
+      this.invulnerableTimer -= dt;
     }
-  }
-
-  jump() {
-    if (!this.isJumping) {
-      this.isJumping = true;
-      this.velocityY = JUMP_FORCE;
-      if (this.isSliding) {
-        this.stopSlide();
-      }
-      return true;
-    }
-    return false;
-  }
-
-  slide() {
-    if (!this.isSliding) {
-      this.isSliding = true;
-      this.slideTimer = SLIDE_DURATION;
-      // 若在空中快速下墜俯衝
-      if (this.isJumping) {
-        this.velocityY = -25;
-      }
-      return true;
-    }
-    return false;
-  }
-
-  stopSlide() {
-    this.isSliding = false;
-    this.slideTimer = 0;
-    this.torso.scale.set(1, 1, 1);
-    this.torso.rotation.x = 0;
-  }
-
-  update(dt, speed) {
-    // 1. X 軸平滑變道過渡與傾斜
-    const dx = this.targetX - this.mesh.position.x;
-    this.mesh.position.x += dx * Math.min(dt * 15, 1);
-    this.mesh.rotation.z = -dx * 0.15; // 變道時身體自然側傾
-
-    // 2. Y 軸跳躍重力模擬
-    if (this.isJumping) {
-      this.velocityY -= GRAVITY * dt;
-      this.y += this.velocityY * dt;
-
-      if (this.y <= 0) {
-        this.y = 0;
-        this.velocityY = 0;
-        this.isJumping = false;
+    if (this.isStar) {
+      this.starTimer -= dt;
+      if (this.starTimer <= 0) {
+        this.isStar = false;
       }
     }
 
-    // 3. 滑鏟狀態計時與縮放
-    if (this.isSliding) {
-      this.slideTimer -= dt;
-      this.torso.scale.set(1, 0.45, 1.4); // 降低身高、壓低重心
-      this.torso.rotation.x = 0.6;
-      if (this.slideTimer <= 0) {
-        this.stopSlide();
-      }
+    // 2. 水平輸入與加速度
+    const maxSpeed = this.isStar ? MAX_RUN_SPEED * 1.35 : MAX_RUN_SPEED;
+    if (input.left) {
+      this.vx -= ACCEL * dt;
+      this.facing = -1;
+    } else if (input.right) {
+      this.vx += ACCEL * dt;
+      this.facing = 1;
     } else {
-      this.torso.scale.set(1, 1, 1);
-      this.torso.rotation.x = 0;
+      // 地面摩擦減速
+      if (this.vx > 0) {
+        this.vx = Math.max(0, this.vx - FRICTION * dt);
+      } else if (this.vx < 0) {
+        this.vx = Math.min(0, this.vx + FRICTION * dt);
+      }
+    }
+    this.vx = Math.max(-maxSpeed, Math.min(maxSpeed, this.vx));
+
+    // 3. 跳躍
+    if (input.jump && this.isGrounded) {
+      this.vy = JUMP_FORCE;
+      this.isGrounded = false;
+      game.audio.playJump();
+    }
+    // 釋放跳躍鍵提前截斷跳躍弧線 (實現長按跳得更高、短按輕跳)
+    if (!input.jump && this.vy < -240) {
+      this.vy = -240;
     }
 
-    this.mesh.position.y = this.y;
+    // 4. 下蹲
+    this.isDucking = input.down && this.isGrounded && this.isSuper;
 
-    // 4. 奔跑關節擺動動畫
-    this.runAnimTime += dt * (speed * 0.7);
-    if (!this.isJumping && !this.isSliding) {
-      const swing = Math.sin(this.runAnimTime) * 0.7;
-      this.leftArm.rotation.x = swing;
-      this.rightArm.rotation.x = -swing;
-      this.leftLeg.rotation.x = -swing;
-      this.rightLeg.rotation.x = swing;
-      this.head.rotation.y = Math.sin(this.runAnimTime * 0.5) * 0.1;
-    } else if (this.isJumping) {
-      // 跳躍收腿姿勢
-      this.leftLeg.rotation.x = -0.7;
-      this.rightLeg.rotation.x = -0.7;
-      this.leftArm.rotation.x = 1.2;
-      this.rightArm.rotation.x = 1.2;
+    // 5. 重力模擬
+    this.vy += GRAVITY * dt;
+
+    // 6. 移動步進
+    this.x += this.vx * dt;
+    this.y += this.vy * dt;
+
+    // 奔跑動畫計時
+    if (this.isGrounded && Math.abs(this.vx) > 10) {
+      this.walkAnimTime += dt * Math.abs(this.vx) * 0.05;
     }
-
-    // 護盾自轉特效
-    if (this.hasShield && this.shieldMesh.visible) {
-      this.shieldMesh.rotation.y += dt * 3;
-      this.shieldMesh.rotation.x += dt * 1.5;
-    }
-
-    // 5. 更新全身碰撞包圍盒
-    // 依據是否滑鏟動態縮小頂部高度
-    const height = this.isSliding ? 0.75 : 1.9;
-    const min = new THREE.Vector3(
-      this.mesh.position.x - 0.45,
-      this.mesh.position.y,
-      this.mesh.position.z - 0.45
-    );
-    const max = new THREE.Vector3(
-      this.mesh.position.x + 0.45,
-      this.mesh.position.y + height,
-      this.mesh.position.z + 0.45
-    );
-    this.box.set(min, max);
   }
 
-  reset() {
-    this.currentLane = 1;
-    this.targetX = LANES[1];
-    this.mesh.position.set(0, 0, 0);
-    this.mesh.rotation.set(0, 0, 0);
-    this.y = 0;
-    this.velocityY = 0;
-    this.isJumping = false;
-    this.stopSlide();
-    this.setShield(false);
+  draw(ctx, cameraX) {
+    // 受傷閃爍
+    if (this.invulnerableTimer > 0 && Math.floor(Date.now() / 80) % 2 === 0) {
+      return;
+    }
+
+    const drawX = Math.floor(this.x - cameraX);
+    const drawY = Math.floor(this.y);
+
+    ctx.save();
+    ctx.translate(drawX + this.width / 2, drawY + this.height);
+    ctx.scale(this.facing, 1);
+
+    // 無敵星彩虹閃爍色彩
+    let hatColor = '#e52521';
+    let overallsColor = '#0050d0';
+    if (this.isStar) {
+      const hues = ['#ff0000', '#ff8800', '#ffff00', '#00ff00', '#00ffff', '#ff00ff'];
+      hatColor = hues[Math.floor(Date.now() / 90) % hues.length];
+      overallsColor = '#ffffff';
+    }
+
+    const h = this.height;
+    const w = this.width;
+
+    // 繪製經典像素馬力歐風格角色
+    // 1. 鞋子
+    ctx.fillStyle = '#6b3600';
+    const walkOffset = this.isGrounded ? Math.sin(this.walkAnimTime) * 4 : -3;
+    ctx.fillRect(-w / 2, -6, 10, 6);
+    ctx.fillRect(w / 2 - 10, -6 + walkOffset, 10, 6);
+
+    // 2. 藍色吊帶褲 (Overalls)
+    ctx.fillStyle = overallsColor;
+    const bodyH = this.isSuper ? 24 : 14;
+    ctx.fillRect(-w / 2 + 2, -bodyH - 6, w - 4, bodyH);
+
+    // 3. 紅色襯衫 (Shirt)
+    ctx.fillStyle = hatColor;
+    ctx.fillRect(-w / 2 + 1, -bodyH - 2, 5, 8);
+    ctx.fillRect(w / 2 - 6, -bodyH - 2, 5, 8);
+
+    // 4. 頭部與膚色
+    ctx.fillStyle = '#ffbe8f';
+    const headSize = this.isSuper ? 18 : 14;
+    const headY = -h + (this.isSuper ? 14 : 10);
+    ctx.fillRect(-headSize / 2 + 2, headY, headSize, headSize);
+
+    // 5. 黑色八字鬍與眼睛
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(2, headY + headSize * 0.4, 6, 4); // 鬍子
+    ctx.fillRect(3, headY + headSize * 0.15, 3, 4); // 眼睛
+
+    // 6. 紅色經典標誌帽子 (Cap)
+    ctx.fillStyle = hatColor;
+    ctx.fillRect(-headSize / 2, -h, headSize + 4, 8);
+    ctx.fillRect(2, -h + 4, 8, 4); // 帽簷
+
+    ctx.restore();
   }
 }
 
 // ==========================================
-// 4. 跑道與城市建築管理器 (TrackManager)
+// 4. 敵人系統 (Goomba 栗寶寶 & Koopa 烏龜)
 // ==========================================
-class TrackManager {
-  constructor(scene) {
-    this.scene = scene;
-    this.segments = [];
-    this.nextZ = 0;
-
-    // 共享材質快取
-    this.groundMat = new THREE.MeshStandardMaterial({
-      color: 0x070b15,
-      roughness: 0.4,
-      metalness: 0.6
-    });
-
-    this.laneDividerMat = new THREE.MeshBasicMaterial({
-      color: 0x00f3ff,
-      wireframe: false
-    });
-
-    this.buildingMat = new THREE.MeshStandardMaterial({
-      color: 0x040710,
-      roughness: 0.5,
-      metalness: 0.7
-    });
-
-    this.neonWindowMat = new THREE.MeshBasicMaterial({
-      color: 0x00a8ff
-    });
-
-    this.neonPinkMat = new THREE.MeshBasicMaterial({
-      color: 0xff0055
-    });
-
-    this.initTracks();
+class Goomba {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.width = 28;
+    this.height = 28;
+    this.vx = -70;
+    this.vy = 0;
+    this.isDead = false;
+    this.deadTimer = 0;
   }
 
-  initTracks() {
-    this.nextZ = 20; // 從玩家身後一點點開始
-    for (let i = 0; i < VISIBLE_SEGMENTS; i++) {
-      this.spawnSegment();
+  update(dt, tiles) {
+    if (this.isDead) {
+      this.deadTimer += dt;
+      return;
     }
+    this.vy += GRAVITY * dt;
+    this.x += this.vx * dt;
+    this.y += this.vy * dt;
+
+    // 與地面碰撞
+    this.handleTileCollision(tiles);
   }
 
-  spawnSegment() {
-    const group = new THREE.Group();
-    const length = SEGMENT_LENGTH;
-    const trackWidth = LANE_WIDTH * 3 + 2;
-
-    // 1. 主地面跑道
-    const groundGeo = new THREE.PlaneGeometry(trackWidth, length);
-    const ground = new THREE.Mesh(groundGeo, this.groundMat);
-    ground.rotation.x = -Math.PI / 2;
-    ground.receiveShadow = true;
-    group.add(ground);
-
-    // 2. 跑道邊緣護欄光帶
-    const edgeGeo = new THREE.BoxGeometry(0.3, 0.4, length);
-    const leftEdge = new THREE.Mesh(edgeGeo, this.laneDividerMat);
-    leftEdge.position.set(-trackWidth / 2, 0.2, 0);
-    group.add(leftEdge);
-
-    const rightEdge = new THREE.Mesh(edgeGeo, this.laneDividerMat);
-    rightEdge.position.set(trackWidth / 2, 0.2, 0);
-    group.add(rightEdge);
-
-    // 3. 車道分界虛線
-    [-LANE_WIDTH / 2, LANE_WIDTH / 2].forEach(x => {
-      const lineGeo = new THREE.BoxGeometry(0.08, 0.05, length);
-      const line = new THREE.Mesh(lineGeo, this.neonPinkMat);
-      line.position.set(x, 0.02, 0);
-      group.add(line);
-    });
-
-    // 4. 兩側賽博龐克摩天大樓群
-    const buildingCount = 6;
-    for (let i = 0; i < buildingCount; i++) {
-      const zOffset = (i / buildingCount - 0.5) * length;
-
-      // 左側大樓
-      this.createBuilding(group, -trackWidth / 2 - 12 - Math.random() * 8, zOffset);
-      // 右側大樓
-      this.createBuilding(group, trackWidth / 2 + 12 + Math.random() * 8, zOffset);
-    }
-
-    group.position.z = this.nextZ - length / 2;
-    this.nextZ -= length;
-    this.scene.add(group);
-    this.segments.push(group);
-  }
-
-  createBuilding(parent, x, z) {
-    const width = 12 + Math.random() * 10;
-    const depth = 10 + Math.random() * 8;
-    const height = 30 + Math.random() * 60;
-
-    const bldgGeo = new THREE.BoxGeometry(width, height, depth);
-    const bldg = new THREE.Mesh(bldgGeo, this.buildingMat);
-    bldg.position.set(x, height / 2 - 1, z);
-    parent.add(bldg);
-
-    // 霓虹招牌或窗戶條紋
-    if (Math.random() > 0.4) {
-      const signGeo = new THREE.BoxGeometry(width * 0.8, 1.2, depth + 0.2);
-      const signMat = Math.random() > 0.5 ? this.neonWindowMat : this.neonPinkMat;
-      const sign = new THREE.Mesh(signGeo, signMat);
-      sign.position.set(x, 10 + Math.random() * 30, z);
-      parent.add(sign);
-    }
-  }
-
-  update(playerZ) {
-    // 當最老的地形塊超出玩家身後超過 SEGMENT_LENGTH 時，將其銷毀並在前方生成新地塊
-    if (this.segments.length > 0) {
-      const oldest = this.segments[0];
-      if (oldest.position.z > playerZ + SEGMENT_LENGTH * 1.5) {
-        this.scene.remove(oldest);
-        // 清理 geometry / 避免內存洩漏
-        oldest.traverse(child => {
-          if (child.geometry) child.geometry.dispose();
-        });
-        this.segments.shift();
-        this.spawnSegment();
-      }
-    }
-  }
-
-  reset() {
-    this.segments.forEach(seg => {
-      this.scene.remove(seg);
-      seg.traverse(child => {
-        if (child.geometry) child.geometry.dispose();
-      });
-    });
-    this.segments = [];
-    this.initTracks();
-  }
-}
-
-// ==========================================
-// 5. 障礙物與道具生成系統 (EntityManager)
-// ==========================================
-class EntityManager {
-  constructor(scene, soundSystem) {
-    this.scene = scene;
-    this.sounds = soundSystem;
-    this.obstacles = [];
-    this.coins = [];
-    this.powerups = [];
-    this.nextSpawnZ = -30;
-
-    // 材質快取
-    this.lowBarrierMat = new THREE.MeshStandardMaterial({
-      color: 0xff3300,
-      emissive: 0xff2200,
-      emissiveIntensity: 0.6,
-      roughness: 0.3
-    });
-
-    this.highBeamMat = new THREE.MeshStandardMaterial({
-      color: 0xff0077,
-      emissive: 0xff0055,
-      emissiveIntensity: 0.8,
-      roughness: 0.2
-    });
-
-    this.fullBlockMat = new THREE.MeshStandardMaterial({
-      color: 0x1f293d,
-      roughness: 0.2,
-      metalness: 0.9
-    });
-
-    this.trainMat = new THREE.MeshStandardMaterial({
-      color: 0x0088ff,
-      emissive: 0x0044aa,
-      emissiveIntensity: 0.4,
-      roughness: 0.3
-    });
-
-    this.coinMat = new THREE.MeshStandardMaterial({
-      color: 0xffbe0b,
-      emissive: 0xff9900,
-      emissiveIntensity: 0.8,
-      metalness: 0.8,
-      roughness: 0.2
-    });
-  }
-
-  spawnCluster(z) {
-    // 隨機選擇 1 到 2 條跑道生成障礙物，確保至少留有 1 條安全逃生通道
-    const freeLane = Math.floor(Math.random() * 3);
-    const lanesToBlock = [0, 1, 2].filter(lane => lane !== freeLane);
-
-    // 在阻塞跑道生成障礙物
-    lanesToBlock.forEach(lane => {
-      // 隨機障礙類型：0: 矮障礙 (跳躍), 1: 高橫樑 (滑鏟), 2: 全阻擋 (換道), 3: 迎面列車
-      const rand = Math.random();
-      if (rand < 0.35) {
-        this.createLowBarrier(lane, z);
-      } else if (rand < 0.65) {
-        this.createHighBeam(lane, z);
-      } else if (rand < 0.85) {
-        this.createFullBlock(lane, z);
-      } else {
-        this.createTrain(lane, z);
-      }
-    });
-
-    // 在安全道或障礙物上方生成金幣與能量道具
-    if (Math.random() > 0.2) {
-      this.spawnCoinArc(freeLane, z);
-    }
-
-    // 25% 機率生成強力道具
-    if (Math.random() < 0.25) {
-      this.spawnPowerup(freeLane, z + (Math.random() > 0.5 ? 12 : -12));
-    }
-  }
-
-  // 1. 矮路障：需跳躍
-  createLowBarrier(lane, z) {
-    const group = new THREE.Group();
-    const geo = new THREE.BoxGeometry(2.4, 0.9, 0.4);
-    const mesh = new THREE.Mesh(geo, this.lowBarrierMat);
-    mesh.position.y = 0.45;
-    mesh.castShadow = true;
-    group.add(mesh);
-
-    // 霓虹警示線
-    const stripeGeo = new THREE.BoxGeometry(2.42, 0.2, 0.42);
-    const stripe = new THREE.Mesh(stripeGeo, new THREE.MeshBasicMaterial({ color: 0xffff00 }));
-    stripe.position.y = 0.55;
-    group.add(stripe);
-
-    group.position.set(LANES[lane], 0, z);
-    this.scene.add(group);
-
-    this.obstacles.push({
-      group: group,
-      type: 'low',
-      box: new THREE.Box3(),
-      bounds: { minH: 0, maxH: 1.0, w: 1.2, d: 0.3 }
-    });
-  }
-
-  // 2. 高橫樑：需滑鏟鑽過
-  createHighBeam(lane, z) {
-    const group = new THREE.Group();
-
-    // 兩側立柱
-    const poleGeo = new THREE.CylinderGeometry(0.08, 0.08, 3.5);
-    const leftPole = new THREE.Mesh(poleGeo, this.fullBlockMat);
-    leftPole.position.set(-1.3, 1.75, 0);
-    const rightPole = new THREE.Mesh(poleGeo, this.fullBlockMat);
-    rightPole.position.set(1.3, 1.75, 0);
-    group.add(leftPole, rightPole);
-
-    // 頂部高橫樑 (下方騰空約 1.1 米，滑鏟高度約 0.75 米可安全通過)
-    const beamGeo = new THREE.BoxGeometry(2.7, 1.4, 0.5);
-    const beam = new THREE.Mesh(beamGeo, this.highBeamMat);
-    beam.position.y = 2.1;
-    beam.castShadow = true;
-    group.add(beam);
-
-    group.position.set(LANES[lane], 0, z);
-    this.scene.add(group);
-
-    this.obstacles.push({
-      group: group,
-      type: 'high',
-      box: new THREE.Box3(),
-      bounds: { minH: 1.3, maxH: 2.8, w: 1.3, d: 0.3 }
-    });
-  }
-
-  // 3. 全高障礙牆：需換道
-  createFullBlock(lane, z) {
-    const group = new THREE.Group();
-    const geo = new THREE.BoxGeometry(2.6, 3.2, 0.8);
-    const mesh = new THREE.Mesh(geo, this.fullBlockMat);
-    mesh.position.y = 1.6;
-    mesh.castShadow = true;
-    group.add(mesh);
-
-    // 霓虹 X 警示牌
-    const xGeo = new THREE.BoxGeometry(1.6, 0.3, 0.85);
-    const bar1 = new THREE.Mesh(xGeo, this.highBeamMat);
-    bar1.rotation.z = Math.PI / 4;
-    bar1.position.y = 1.6;
-    const bar2 = new THREE.Mesh(xGeo, this.highBeamMat);
-    bar2.rotation.z = -Math.PI / 4;
-    bar2.position.y = 1.6;
-    group.add(bar1, bar2);
-
-    group.position.set(LANES[lane], 0, z);
-    this.scene.add(group);
-
-    this.obstacles.push({
-      group: group,
-      type: 'full',
-      box: new THREE.Box3(),
-      bounds: { minH: 0, maxH: 3.2, w: 1.3, d: 0.4 }
-    });
-  }
-
-  // 4. 動態逆向移動列車
-  createTrain(lane, z) {
-    const group = new THREE.Group();
-    const bodyGeo = new THREE.BoxGeometry(2.6, 2.6, 12);
-    const body = new THREE.Mesh(bodyGeo, this.trainMat);
-    body.position.y = 1.3;
-    body.castShadow = true;
-    group.add(body);
-
-    // 車頭大燈
-    const lightGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.1, 16);
-    const lightMat = new THREE.MeshBasicMaterial({ color: 0xffff55 });
-    const headlightL = new THREE.Mesh(lightGeo, lightMat);
-    headlightL.rotation.x = Math.PI / 2;
-    headlightL.position.set(-0.8, 1.2, 6.05);
-    const headlightR = new THREE.Mesh(lightGeo, lightMat);
-    headlightR.rotation.x = Math.PI / 2;
-    headlightR.position.set(0.8, 1.2, 6.05);
-    group.add(headlightL, headlightR);
-
-    group.position.set(LANES[lane], 0, z);
-    this.scene.add(group);
-
-    this.obstacles.push({
-      group: group,
-      type: 'train',
-      isMoving: true,
-      moveSpeed: 14,
-      box: new THREE.Box3(),
-      bounds: { minH: 0, maxH: 2.6, w: 1.3, d: 6.0 }
-    });
-  }
-
-  // 生成金幣排/弧線
-  spawnCoinArc(lane, centerZ) {
-    const count = 5;
-    for (let i = 0; i < count; i++) {
-      const z = centerZ - 10 + i * 4.5;
-      const coinGeo = new THREE.OctahedronGeometry(0.4, 0);
-      const coin = new THREE.Mesh(coinGeo, this.coinMat);
-      coin.position.set(LANES[lane], 1.2, z);
-      this.scene.add(coin);
-      this.coins.push({
-        mesh: coin,
-        box: new THREE.Box3()
-      });
-    }
-  }
-
-  // 生成強力道具
-  spawnPowerup(lane, z) {
-    const types = Object.keys(POWERUP_TYPES);
-    const pickedType = types[Math.floor(Math.random() * types.length)];
-    const def = POWERUP_TYPES[pickedType];
-
-    const group = new THREE.Group();
-    const geo = new THREE.IcosahedronGeometry(0.55, 0);
-    const mat = new THREE.MeshStandardMaterial({
-      color: def.color,
-      emissive: def.color,
-      emissiveIntensity: 0.9,
-      roughness: 0.1
-    });
-    const mesh = new THREE.Mesh(geo, mat);
-    group.add(mesh);
-
-    // 外圍懸浮光環
-    const ringGeo = new THREE.TorusGeometry(0.8, 0.04, 8, 24);
-    const ringMat = new THREE.MeshBasicMaterial({ color: def.color });
-    const ring = new THREE.Mesh(ringGeo, ringMat);
-    ring.rotation.x = Math.PI / 2;
-    group.add(ring);
-
-    group.position.set(LANES[lane], 1.4, z);
-    this.scene.add(group);
-
-    this.powerups.push({
-      group: group,
-      type: pickedType,
-      def: def,
-      box: new THREE.Box3()
-    });
-  }
-
-  update(dt, player, activePowerups, onHit, onCollectCoin, onCollectPowerup) {
-    const playerZ = player.mesh.position.z;
-
-    // 定期向前生成障礙物集團 (保持前方 180 米都有障礙物)
-    while (this.nextSpawnZ > playerZ - 200) {
-      this.spawnCluster(this.nextSpawnZ);
-      this.nextSpawnZ -= 38 + Math.random() * 14;
-    }
-
-    // 1. 障礙物碰撞與移動判定
-    for (let i = this.obstacles.length - 1; i >= 0; i--) {
-      const obs = this.obstacles[i];
-      if (obs.isMoving) {
-        // 迎面行駛
-        obs.group.position.z += obs.moveSpeed * dt;
-      }
-
-      // 更新包圍盒
-      const pos = obs.group.position;
-      const b = obs.bounds;
-      obs.box.min.set(pos.x - b.w, pos.y + b.minH, pos.z - b.d);
-      obs.box.max.set(pos.x + b.w, pos.y + b.maxH, pos.z + b.d);
-
-      // 碰撞檢測 (若 Nitro 狀態，撞擊直接摧毀障礙物)
-      if (player.box.intersectsBox(obs.box)) {
-        if (activePowerups.NITRO) {
-          // 摧毀特效
-          this.scene.remove(obs.group);
-          this.obstacles.splice(i, 1);
-          this.sounds.playShieldBreak();
-          continue;
-        } else if (player.hasShield) {
-          // 護盾吸收一次撞擊
-          player.setShield(false);
-          activePowerups.SHIELD = 0;
-          this.sounds.playShieldBreak();
-          this.scene.remove(obs.group);
-          this.obstacles.splice(i, 1);
-          continue;
+  handleTileCollision(tiles) {
+    tiles.forEach(tile => {
+      if (tile.type === 'EMPTY') return;
+      if (
+        this.x < tile.x + tile.w &&
+        this.x + this.width > tile.x &&
+        this.y < tile.y + tile.h &&
+        this.y + this.height > tile.y
+      ) {
+        // 腳下著地
+        if (this.vy > 0 && this.y + this.height - this.vy * 0.05 <= tile.y) {
+          this.y = tile.y - this.height;
+          this.vy = 0;
         } else {
-          // 致命撞擊，遊戲結束
-          onHit();
-          return;
+          // 撞牆反彈變向
+          this.vx = -this.vx;
         }
       }
-
-      // 超過身後銷毀
-      if (obs.group.position.z > playerZ + 25) {
-        this.scene.remove(obs.group);
-        this.obstacles.splice(i, 1);
-      }
-    }
-
-    // 2. 金幣旋轉、磁鐵吸附與拾取
-    for (let i = this.coins.length - 1; i >= 0; i--) {
-      const coin = this.coins[i];
-      coin.mesh.rotation.y += dt * 3.5;
-
-      // 磁鐵吸引邏輯
-      if (activePowerups.MAGNET) {
-        const pPos = player.mesh.position;
-        const cPos = coin.mesh.position;
-        const dist = pPos.distanceTo(cPos);
-        if (dist < 22) {
-          cPos.lerp(new THREE.Vector3(pPos.x, pPos.y + 1, pPos.z), dt * 14);
-        }
-      }
-
-      coin.box.setFromObject(coin.mesh);
-      if (player.box.intersectsBox(coin.box)) {
-        this.scene.remove(coin.mesh);
-        this.coins.splice(i, 1);
-        this.sounds.playCoin();
-        onCollectCoin();
-        continue;
-      }
-
-      if (coin.mesh.position.z > playerZ + 20) {
-        this.scene.remove(coin.mesh);
-        this.coins.splice(i, 1);
-      }
-    }
-
-    // 3. 道具旋轉與拾取
-    for (let i = this.powerups.length - 1; i >= 0; i--) {
-      const pup = this.powerups[i];
-      pup.group.rotation.y += dt * 2.5;
-
-      pup.box.setFromObject(pup.group);
-      if (player.box.intersectsBox(pup.box)) {
-        this.scene.remove(pup.group);
-        this.powerups.splice(i, 1);
-        this.sounds.playPowerup();
-        onCollectPowerup(pup.type, pup.def);
-        continue;
-      }
-
-      if (pup.group.position.z > playerZ + 20) {
-        this.scene.remove(pup.group);
-        this.powerups.splice(i, 1);
-      }
-    }
-  }
-
-  reset() {
-    this.obstacles.forEach(o => this.scene.remove(o.group));
-    this.coins.forEach(c => this.scene.remove(c.mesh));
-    this.powerups.forEach(p => this.scene.remove(p.group));
-    this.obstacles = [];
-    this.coins = [];
-    this.powerups = [];
-    this.nextSpawnZ = -30;
-  }
-}
-
-// ==========================================
-// 6. 速度線粒子特效 (SpeedParticles)
-// ==========================================
-class SpeedParticles {
-  constructor(scene) {
-    this.scene = scene;
-    this.count = 200;
-    const geo = new THREE.BufferGeometry();
-    const positions = new Float32Array(this.count * 3);
-
-    for (let i = 0; i < this.count; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 24;
-      positions[i * 3 + 1] = Math.random() * 10;
-      positions[i * 3 + 2] = -Math.random() * 80;
-    }
-
-    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    const mat = new THREE.PointsMaterial({
-      color: 0x00f3ff,
-      size: 0.15,
-      transparent: true,
-      opacity: 0.5
     });
-
-    this.points = new THREE.Points(geo, mat);
-    this.scene.add(this.points);
   }
 
-  update(playerZ, isNitro) {
-    const pos = this.points.geometry.attributes.position.array;
-    this.points.material.opacity = isNitro ? 0.9 : 0.4;
-    this.points.material.color.setHex(isNitro ? 0xffaa00 : 0x00f3ff);
+  draw(ctx, cameraX) {
+    const drawX = Math.floor(this.x - cameraX);
+    const drawY = Math.floor(this.y);
 
-    for (let i = 0; i < this.count; i++) {
-      // 粒子向身後飛掠
-      if (pos[i * 3 + 2] > playerZ + 10) {
-        pos[i * 3 + 2] = playerZ - 70 - Math.random() * 30;
-        pos[i * 3] = (Math.random() - 0.5) * 24;
-        pos[i * 3 + 1] = Math.random() * 10;
-      }
+    if (this.isDead) {
+      // 被踩扁的壓扁效果
+      ctx.fillStyle = '#9b4200';
+      ctx.fillRect(drawX, drawY + 16, this.width, 12);
+      ctx.fillStyle = '#000';
+      ctx.fillRect(drawX + 6, drawY + 19, 4, 3);
+      ctx.fillRect(drawX + 18, drawY + 19, 4, 3);
+      return;
     }
-    this.points.geometry.attributes.position.needsUpdate = true;
+
+    // 栗寶寶蘑菇頭
+    ctx.fillStyle = '#a84c00';
+    ctx.beginPath();
+    ctx.roundRect ? ctx.roundRect(drawX, drawY, this.width, 20, 6) : ctx.fillRect(drawX, drawY, this.width, 20);
+    ctx.fill();
+
+    // 黑色憤怒雙眼
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(drawX + 4, drawY + 6, 6, 8);
+    ctx.fillRect(drawX + 18, drawY + 6, 6, 8);
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(drawX + 7, drawY + 8, 3, 6);
+    ctx.fillRect(drawX + 18, drawY + 8, 3, 6);
+
+    // 腳步
+    ctx.fillStyle = '#000000';
+    const step = Math.floor(Date.now() / 150) % 2 === 0 ? 2 : -2;
+    ctx.fillRect(drawX + 2 + step, drawY + 20, 10, 8);
+    ctx.fillRect(drawX + 16 - step, drawY + 20, 10, 8);
+  }
+}
+
+// 綠烏龜 (Koopa)
+class Koopa {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.width = 28;
+    this.height = 36;
+    this.vx = -60;
+    this.vy = 0;
+    this.isShell = false;
+    this.isKicked = false;
   }
 
-  reset() {
-    this.points.material.opacity = 0.4;
+  update(dt, tiles) {
+    this.vy += GRAVITY * dt;
+    this.x += this.vx * dt;
+    this.y += this.vy * dt;
+
+    tiles.forEach(tile => {
+      if (tile.type === 'EMPTY') return;
+      if (
+        this.x < tile.x + tile.w &&
+        this.x + this.width > tile.x &&
+        this.y < tile.y + tile.h &&
+        this.y + this.height > tile.y
+      ) {
+        if (this.vy > 0 && this.y + this.height - this.vy * 0.05 <= tile.y) {
+          this.y = tile.y - this.height;
+          this.vy = 0;
+        } else {
+          this.vx = -this.vx;
+        }
+      }
+    });
+  }
+
+  draw(ctx, cameraX) {
+    const drawX = Math.floor(this.x - cameraX);
+    const drawY = Math.floor(this.y);
+
+    if (this.isShell) {
+      // 縮入綠色龜殼
+      ctx.fillStyle = '#00a800';
+      ctx.beginPath();
+      ctx.arc(drawX + 14, drawY + 18, 13, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(drawX + 8, drawY + 12, 12, 10);
+      return;
+    }
+
+    // 烏龜身體
+    ctx.fillStyle = '#00a800';
+    ctx.fillRect(drawX + 4, drawY + 8, 20, 20); // 龜殼
+    ctx.fillStyle = '#ffd13b';
+    ctx.fillRect(drawX + (this.vx > 0 ? 18 : 0), drawY, 10, 12); // 頭
+    ctx.fillStyle = '#ff3838';
+    ctx.fillRect(drawX + 2, drawY + 28, 10, 8); // 鞋
+    ctx.fillRect(drawX + 16, drawY + 28, 10, 8);
   }
 }
 
 // ==========================================
-// 7. 主遊戲控制器 (GameManager)
+// 5. 道具 (Super Mushroom & Coin)
 // ==========================================
-class GameManager {
+class Mushroom {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.width = 26;
+    this.height = 26;
+    this.vx = 80;
+    this.vy = -180;
+  }
+
+  update(dt, tiles) {
+    this.vy += GRAVITY * dt;
+    this.x += this.vx * dt;
+    this.y += this.vy * dt;
+
+    tiles.forEach(tile => {
+      if (tile.type === 'EMPTY') return;
+      if (
+        this.x < tile.x + tile.w &&
+        this.x + this.width > tile.x &&
+        this.y < tile.y + tile.h &&
+        this.y + this.height > tile.y
+      ) {
+        if (this.vy > 0 && this.y + this.height - this.vy * 0.05 <= tile.y) {
+          this.y = tile.y - this.height;
+          this.vy = 0;
+        } else {
+          this.vx = -this.vx;
+        }
+      }
+    });
+  }
+
+  draw(ctx, cameraX) {
+    const drawX = Math.floor(this.x - cameraX);
+    const drawY = Math.floor(this.y);
+
+    // 紅底白點超級蘑菇
+    ctx.fillStyle = '#e52521';
+    ctx.beginPath();
+    ctx.arc(drawX + 13, drawY + 12, 12, Math.PI, 0);
+    ctx.fill();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(drawX + 10, drawY + 3, 6, 6);
+    ctx.fillRect(drawX + 3, drawY + 8, 4, 4);
+    ctx.fillRect(drawX + 19, drawY + 8, 4, 4);
+
+    // 蘑菇莖
+    ctx.fillStyle = '#ffbe8f';
+    ctx.fillRect(drawX + 6, drawY + 12, 14, 14);
+  }
+}
+
+// ==========================================
+// 6. 磚塊與粒子效果
+// ==========================================
+class Particle {
+  constructor(x, y, vx, vy, color) {
+    this.x = x;
+    this.y = y;
+    this.vx = vx;
+    this.vy = vy;
+    this.color = color;
+    this.size = 6;
+    this.life = 0.6;
+  }
+
+  update(dt) {
+    this.vy += GRAVITY * dt;
+    this.x += this.vx * dt;
+    this.y += this.vy * dt;
+    this.life -= dt;
+  }
+
+  draw(ctx, cameraX) {
+    ctx.fillStyle = this.color;
+    ctx.fillRect(Math.floor(this.x - cameraX), Math.floor(this.y), this.size, this.size);
+  }
+}
+
+// ==========================================
+// 7. 核心遊戲引擎 (Game)
+// ==========================================
+class SuperMarioGame {
   constructor() {
-    // 遊戲狀態
-    this.state = 'START'; // 'START', 'PLAYING', 'PAUSED', 'GAMEOVER'
+    this.canvas = document.getElementById('game-canvas');
+    this.ctx = this.canvas.getContext('2d');
+    this.audio = new RetroAudio();
+
+    // 畫布基礎邏輯解析度 (經典像素比例 640x360)
+    this.baseW = 640;
+    this.baseH = 360;
+    this.cameraX = 0;
+
+    // 遊戲狀態數值
     this.score = 0;
     this.coins = 0;
+    this.lives = 3;
     this.distance = 0;
-    this.speed = BASE_SPEED;
-    this.multiplier = 1;
-    this.highScore = parseInt(localStorage.getItem('cyber_runner_highscore') || '0', 10);
+    this.highScore = parseInt(localStorage.getItem('mario_parkour_highscore') || '0', 10);
+    this.state = 'START'; // 'START', 'PLAYING', 'PAUSED', 'GAMEOVER'
 
-    // 道具有效時間字典 (以秒為單位計時)
-    this.activePowerups = {
-      SHIELD: 0,
-      MAGNET: 0,
-      NITRO: 0,
-      MULTIPLIER: 0
-    };
+    // 輸入監聽
+    this.input = { left: false, right: false, jump: false, down: false };
 
-    // 音效系統
-    this.sounds = new SoundSystem();
+    // 遊戲實體
+    this.mario = new Mario(100, 200);
+    this.tiles = [];
+    this.enemies = [];
+    this.mushrooms = [];
+    this.particles = [];
+    this.nextChunkX = 0;
 
-    // DOM 元素快取
-    this.canvas = document.getElementById('game-canvas');
+    // DOM 快取
     this.hud = document.getElementById('hud');
     this.scoreDisplay = document.getElementById('score-display');
-    this.distanceDisplay = document.getElementById('distance-display');
     this.coinsDisplay = document.getElementById('coins-display');
-    this.multiplierDisplay = document.getElementById('multiplier-display');
-    this.speedBar = document.getElementById('speed-bar');
-    this.powerupContainer = document.getElementById('powerup-container');
-    this.comboDisplay = document.getElementById('combo-display');
-
+    this.distanceDisplay = document.getElementById('distance-display');
+    this.livesDisplay = document.getElementById('lives-display');
     this.startScreen = document.getElementById('start-screen');
     this.pauseScreen = document.getElementById('pause-screen');
     this.gameOverScreen = document.getElementById('game-over-screen');
@@ -1048,65 +658,102 @@ class GameManager {
     this.finalBestScore = document.getElementById('final-best-score');
     this.newRecordBadge = document.getElementById('new-record-badge');
 
-    // 初始化 Three.js
-    this.initThree();
+    this.startHighScore.textContent = this.padScore(this.highScore);
 
-    // 子系統初始化
-    this.player = new Player(this.scene);
-    this.trackMgr = new TrackManager(this.scene);
-    this.entityMgr = new EntityManager(this.scene, this.sounds);
-    this.speedParticles = new SpeedParticles(this.scene);
-
-    // 綁定輸入控制與按鈕
+    this.resizeCanvas();
     this.bindEvents();
+    this.initWorld();
 
-    // 顯示最高紀錄
-    this.startHighScore.textContent = this.highScore.toLocaleString();
-
-    // 啟動主渲染迴圈
     this.lastTime = performance.now();
-    requestAnimationFrame(this.loop.bind(this));
+    requestAnimationFrame(this.gameLoop.bind(this));
   }
 
-  initThree() {
-    this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x050711);
-    this.scene.fog = new THREE.FogExp2(0x050711, 0.015);
+  resizeCanvas() {
+    this.canvas.width = this.baseW;
+    this.canvas.height = this.baseH;
+  }
 
-    this.camera = new THREE.PerspectiveCamera(
-      65,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      350
-    );
-    this.camera.position.set(0, 4.5, 7.5);
+  padScore(num, size = 6) {
+    let s = num + '';
+    while (s.length < size) s = '0' + s;
+    return s;
+  }
 
-    this.renderer = new THREE.WebGLRenderer({
-      canvas: this.canvas,
-      antialias: true,
-      powerPreference: 'high-performance'
-    });
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  initWorld() {
+    this.tiles = [];
+    this.enemies = [];
+    this.mushrooms = [];
+    this.particles = [];
+    this.nextChunkX = 0;
+    this.cameraX = 0;
 
-    // 環境光與主方向光
-    const hemiLight = new THREE.HemisphereLight(0x334466, 0x111122, 0.9);
-    this.scene.add(hemiLight);
+    // 先生成前 4 個區塊的地形
+    for (let i = 0; i < 4; i++) {
+      this.generateChunk();
+    }
+  }
 
-    this.dirLight = new THREE.DirectionalLight(0x00f3ff, 1.2);
-    this.dirLight.position.set(10, 25, 10);
-    this.dirLight.castShadow = true;
-    this.dirLight.shadow.mapSize.width = 1024;
-    this.dirLight.shadow.mapSize.height = 1024;
-    this.scene.add(this.dirLight);
+  // 無盡動態生成地圖模塊
+  generateChunk() {
+    const startX = this.nextChunkX;
+    const chunkWidth = 20 * TILE_SIZE; // 每個區塊 20 格寬
+    const groundY = this.baseH - TILE_SIZE * 2;
+
+    // 隨機選擇區塊樣式 (0: 平地, 1: 懸崖深淵, 2: 磚塊跳台, 3: 高低水管)
+    const pattern = this.nextChunkX === 0 ? 0 : Math.floor(Math.random() * 4);
+
+    if (pattern === 1) {
+      // 懸崖深淵 (留空 4 格)
+      for (let x = startX; x < startX + chunkWidth; x += TILE_SIZE) {
+        if (x < startX + TILE_SIZE * 6 || x > startX + TILE_SIZE * 11) {
+          this.tiles.push({ x, y: groundY, w: TILE_SIZE, h: TILE_SIZE * 2, type: 'GROUND' });
+        }
+      }
+    } else {
+      // 實心平地
+      for (let x = startX; x < startX + chunkWidth; x += TILE_SIZE) {
+        this.tiles.push({ x, y: groundY, w: TILE_SIZE, h: TILE_SIZE * 2, type: 'GROUND' });
+      }
+
+      if (pattern === 2) {
+        // 空中問號磚與普通磚塊
+        const by = groundY - TILE_SIZE * 3.5;
+        this.tiles.push({ x: startX + TILE_SIZE * 4, y: by, w: TILE_SIZE, h: TILE_SIZE, type: 'BRICK' });
+        this.tiles.push({ x: startX + TILE_SIZE * 5, y: by, w: TILE_SIZE, h: TILE_SIZE, type: 'QUESTION', hasMushroom: true });
+        this.tiles.push({ x: startX + TILE_SIZE * 6, y: by, w: TILE_SIZE, h: TILE_SIZE, type: 'BRICK' });
+        this.tiles.push({ x: startX + TILE_SIZE * 7, y: by, w: TILE_SIZE, h: TILE_SIZE, type: 'QUESTION', hasCoin: true });
+        this.tiles.push({ x: startX + TILE_SIZE * 8, y: by, w: TILE_SIZE, h: TILE_SIZE, type: 'BRICK' });
+
+        // 生成敵人
+        this.enemies.push(new Goomba(startX + TILE_SIZE * 6, groundY - 28));
+      } else if (pattern === 3) {
+        // 經典綠色水管障礙
+        const pipeH = (2 + Math.floor(Math.random() * 2)) * TILE_SIZE;
+        this.tiles.push({
+          x: startX + TILE_SIZE * 8,
+          y: groundY - pipeH,
+          w: TILE_SIZE * 2,
+          h: pipeH,
+          type: 'PIPE'
+        });
+
+        // 放置綠烏龜敵人
+        this.enemies.push(new Koopa(startX + TILE_SIZE * 13, groundY - 36));
+      } else {
+        // 普通平地生成 1~2 隻栗寶寶
+        if (this.nextChunkX > 0) {
+          this.enemies.push(new Goomba(startX + TILE_SIZE * 10, groundY - 28));
+        }
+      }
+    }
+
+    this.nextChunkX += chunkWidth;
   }
 
   bindEvents() {
-    window.addEventListener('resize', this.onWindowResize.bind(this));
+    window.addEventListener('resize', this.resizeCanvas.bind(this));
 
-    // 鍵盤輸入
+    // 鍵盤操作
     window.addEventListener('keydown', (e) => {
       if (this.state === 'START' && (e.code === 'Space' || e.code === 'Enter')) {
         this.startGame();
@@ -1121,67 +768,44 @@ class GameManager {
         return;
       }
 
-      if (this.state !== 'PLAYING') return;
-
-      switch (e.code) {
-        case 'KeyA':
-        case 'ArrowLeft':
-          this.player.changeLane(-1);
-          break;
-        case 'KeyD':
-        case 'ArrowRight':
-          this.player.changeLane(1);
-          break;
-        case 'KeyW':
-        case 'ArrowUp':
-        case 'Space':
-          if (this.player.jump()) {
-            this.sounds.playJump();
-          }
-          break;
-        case 'KeyS':
-        case 'ArrowDown':
-          if (this.player.slide()) {
-            this.sounds.playSlide();
-          }
-          break;
-      }
+      if (e.code === 'KeyA' || e.code === 'ArrowLeft') this.input.left = true;
+      if (e.code === 'KeyD' || e.code === 'ArrowRight') this.input.right = true;
+      if (e.code === 'KeyW' || e.code === 'ArrowUp' || e.code === 'Space') this.input.jump = true;
+      if (e.code === 'KeyS' || e.code === 'ArrowDown') this.input.down = true;
     });
 
-    // 觸控手勢滑動
+    window.addEventListener('keyup', (e) => {
+      if (e.code === 'KeyA' || e.code === 'ArrowLeft') this.input.left = false;
+      if (e.code === 'KeyD' || e.code === 'ArrowRight') this.input.right = false;
+      if (e.code === 'KeyW' || e.code === 'ArrowUp' || e.code === 'Space') this.input.jump = false;
+      if (e.code === 'KeyS' || e.code === 'ArrowDown') this.input.down = false;
+    });
+
+    // 觸控螢幕手勢
     let touchStartX = 0;
     let touchStartY = 0;
-    window.addEventListener('touchstart', (e) => {
-      touchStartX = e.changedTouches[0].screenX;
-      touchStartY = e.changedTouches[0].screenY;
-    }, { passive: true });
+    this.canvas.addEventListener('touchstart', (e) => {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      if (this.state === 'START') this.startGame();
+      if (this.state === 'GAMEOVER') this.restartGame();
+    });
 
-    window.addEventListener('touchend', (e) => {
-      const dx = e.changedTouches[0].screenX - touchStartX;
-      const dy = e.changedTouches[0].screenY - touchStartY;
-      const absDx = Math.abs(dx);
-      const absDy = Math.abs(dy);
+    this.canvas.addEventListener('touchmove', (e) => {
+      const dx = e.touches[0].clientX - touchStartX;
+      const dy = e.touches[0].clientY - touchStartY;
+      this.input.right = dx > 20;
+      this.input.left = dx < -20;
+      this.input.jump = dy < -25;
+      this.input.down = dy > 25;
+    });
 
-      if (this.state === 'START') {
-        this.startGame();
-        return;
-      }
-
-      if (this.state !== 'PLAYING') return;
-
-      if (Math.max(absDx, absDy) > 25) {
-        if (absDx > absDy) {
-          if (dx > 0) this.player.changeLane(1);
-          else this.player.changeLane(-1);
-        } else {
-          if (dy < 0) {
-            if (this.player.jump()) this.sounds.playJump();
-          } else {
-            if (this.player.slide()) this.sounds.playSlide();
-          }
-        }
-      }
-    }, { passive: true });
+    this.canvas.addEventListener('touchend', () => {
+      this.input.right = false;
+      this.input.left = false;
+      this.input.jump = false;
+      this.input.down = false;
+    });
 
     // UI 按鈕交互
     document.getElementById('start-btn').addEventListener('click', () => this.startGame());
@@ -1190,8 +814,8 @@ class GameManager {
     document.getElementById('pause-restart-btn').addEventListener('click', () => this.restartGame());
 
     document.getElementById('sound-btn').addEventListener('click', (e) => {
-      this.sounds.init();
-      const unmuted = this.sounds.toggleMute();
+      this.audio.init();
+      const unmuted = this.audio.toggleMute();
       e.target.textContent = unmuted ? '🔊' : '🔇';
     });
 
@@ -1204,15 +828,9 @@ class GameManager {
     });
   }
 
-  onWindowResize() {
-    this.camera.aspect = window.innerWidth / window.innerHeight;
-    this.camera.updateProjectionMatrix();
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
-  }
-
   startGame() {
-    this.sounds.init();
-    this.sounds.startBgm();
+    this.audio.init();
+    this.audio.startBgm();
     this.state = 'PLAYING';
     this.startScreen.classList.add('hidden');
     this.hud.classList.remove('hidden');
@@ -1222,34 +840,34 @@ class GameManager {
     if (this.state === 'PLAYING') {
       this.state = 'PAUSED';
       this.pauseScreen.classList.remove('hidden');
-      this.sounds.stopBgm();
+      this.audio.stopBgm();
     } else if (this.state === 'PAUSED') {
       this.state = 'PLAYING';
       this.pauseScreen.classList.add('hidden');
-      this.sounds.startBgm();
+      this.audio.startBgm();
     }
   }
 
   onGameOver() {
     this.state = 'GAMEOVER';
-    this.sounds.playHit();
-    this.sounds.stopBgm();
+    this.audio.playDeath();
+    this.audio.stopBgm();
 
     const isNewRecord = this.score > this.highScore;
     if (isNewRecord) {
       this.highScore = Math.floor(this.score);
-      localStorage.setItem('cyber_runner_highscore', this.highScore.toString());
+      localStorage.setItem('mario_parkour_highscore', this.highScore.toString());
       this.newRecordBadge.classList.remove('hidden');
     } else {
       this.newRecordBadge.classList.add('hidden');
     }
 
-    this.finalScore.textContent = Math.floor(this.score).toLocaleString();
+    this.finalScore.textContent = this.padScore(Math.floor(this.score));
     this.finalDistance.textContent = `${Math.floor(this.distance)} m`;
-    this.finalCoins.textContent = this.coins.toLocaleString();
-    this.finalBestScore.textContent = this.highScore.toLocaleString();
+    this.finalCoins.textContent = this.coins.toString();
+    this.finalBestScore.textContent = this.padScore(this.highScore);
 
-    // 與 Tauri Rust 後端通信（若在 Tauri 原生視窗環境中運行）
+    // Tauri Rust 原生命令互通
     try {
       if (window.__TAURI__ && window.__TAURI__.core) {
         window.__TAURI__.core.invoke('save_game_record', {
@@ -1259,11 +877,9 @@ class GameManager {
             coins: this.coins,
             timestamp: Date.now()
           }
-        }).then(res => console.log('Tauri Rust:', res)).catch(err => console.warn('Tauri invoke error:', err));
+        }).then(res => console.log('Tauri Rust:', res)).catch(e => console.warn(e));
       }
-    } catch (e) {
-      console.warn('Tauri bridge not available in pure browser mode');
-    }
+    } catch (e) {}
 
     this.hud.classList.add('hidden');
     this.gameOverScreen.classList.remove('hidden');
@@ -1272,147 +888,328 @@ class GameManager {
   restartGame() {
     this.score = 0;
     this.coins = 0;
+    this.lives = 3;
     this.distance = 0;
-    this.speed = BASE_SPEED;
-    this.multiplier = 1;
+    this.mario = new Mario(100, 200);
 
-    for (let key in this.activePowerups) {
-      this.activePowerups[key] = 0;
-    }
-
-    this.player.reset();
-    this.trackMgr.reset();
-    this.entityMgr.reset();
-    this.speedParticles.reset();
-    this.renderPowerupUI();
+    this.initWorld();
 
     this.pauseScreen.classList.add('hidden');
     this.gameOverScreen.classList.add('hidden');
     this.hud.classList.remove('hidden');
 
-    this.sounds.startBgm();
+    this.audio.startBgm();
     this.state = 'PLAYING';
   }
 
-  collectCoin() {
-    const pointVal = 10 * this.multiplier;
-    this.coins += 1;
-    this.score += pointVal;
-    this.coinsDisplay.textContent = this.coins;
-  }
+  gameLoop(timestamp) {
+    requestAnimationFrame(this.gameLoop.bind(this));
 
-  collectPowerup(type, def) {
-    this.activePowerups[type] = def.duration;
-    if (type === 'SHIELD') {
-      this.player.setShield(true);
-    }
-    this.renderPowerupUI();
-  }
-
-  renderPowerupUI() {
-    this.powerupContainer.innerHTML = '';
-    for (let key in this.activePowerups) {
-      const remaining = this.activePowerups[key];
-      if (remaining > 0) {
-        const def = POWERUP_TYPES[key];
-        const badge = document.createElement('div');
-        badge.className = `powerup-badge ${key.toLowerCase()}`;
-        badge.innerHTML = `
-          <span>${def.label}</span>
-          <div class="powerup-bar">
-            <div class="powerup-fill" style="width: ${(remaining / def.duration) * 100}%"></div>
-          </div>
-        `;
-        this.powerupContainer.appendChild(badge);
-      }
-    }
-  }
-
-  loop(timestamp) {
-    requestAnimationFrame(this.loop.bind(this));
-
-    const dt = Math.min((timestamp - this.lastTime) / 1000, 0.1);
+    const dt = Math.min((timestamp - this.lastTime) / 1000, 0.05);
     this.lastTime = timestamp;
 
     if (this.state === 'PLAYING') {
       this.update(dt);
     }
-
-    // 渲染場景
-    this.renderer.render(this.scene, this.camera);
+    this.render();
   }
 
   update(dt) {
-    // 1. 道具倒數計時與效果
-    const isNitro = this.activePowerups.NITRO > 0;
-    const isMultiplier = this.activePowerups.MULTIPLIER > 0;
-    this.multiplier = isMultiplier ? 2 : 1;
-    this.multiplierDisplay.textContent = `x${this.multiplier}`;
+    const mario = this.mario;
 
-    for (let key in this.activePowerups) {
-      if (this.activePowerups[key] > 0) {
-        this.activePowerups[key] -= dt;
-        if (this.activePowerups[key] <= 0) {
-          this.activePowerups[key] = 0;
-          if (key === 'SHIELD') this.player.setShield(false);
+    // 1. 更新馬力歐物理
+    mario.update(dt, this.input);
+
+    // 奔跑距離與得分累計
+    if (mario.x > this.distance * 10 + 100) {
+      this.distance = Math.floor((mario.x - 100) / 10);
+      this.score += 2;
+    }
+
+    // 2. 馬力歐與地形方塊碰撞檢測
+    mario.isGrounded = false;
+    for (let i = this.tiles.length - 1; i >= 0; i--) {
+      const tile = this.tiles[i];
+      if (tile.type === 'EMPTY') continue;
+
+      if (
+        mario.x < tile.x + tile.w &&
+        mario.x + mario.width > tile.x &&
+        mario.y < tile.y + tile.h &&
+        mario.y + mario.height > tile.y
+      ) {
+        const prevY = mario.y - mario.vy * dt;
+
+        // 從上方落地踩在磚塊上
+        if (prevY + mario.height <= tile.y + 8 && mario.vy >= 0) {
+          mario.y = tile.y - mario.height;
+          mario.vy = 0;
+          mario.isGrounded = true;
+        }
+        // 從下方頂擊磚塊
+        else if (prevY >= tile.y + tile.h - 8 && mario.vy < 0) {
+          mario.y = tile.y + tile.h;
+          mario.vy = 40; // 撞頭向下彈
+
+          if (tile.type === 'QUESTION') {
+            tile.type = 'EMPTY';
+            if (tile.hasMushroom) {
+              this.mushrooms.push(new Mushroom(tile.x, tile.y - 28));
+              this.audio.playPowerup();
+            } else {
+              this.coins += 1;
+              this.score += 200;
+              this.audio.playCoin();
+            }
+          } else if (tile.type === 'BRICK') {
+            if (mario.isSuper) {
+              // 超級馬力歐頂碎磚塊
+              this.audio.playBreak();
+              this.createBrickDebris(tile.x + 16, tile.y + 16);
+              this.tiles.splice(i, 1);
+              this.score += 50;
+              continue;
+            } else {
+              this.audio.playBump();
+            }
+          }
+        }
+        // 側面阻擋
+        else {
+          if (mario.vx > 0) mario.x = tile.x - mario.width;
+          else if (mario.vx < 0) mario.x = tile.x + tile.w;
+          mario.vx = 0;
         }
       }
     }
-    this.renderPowerupUI();
 
-    // 2. 奔跑速度計算 (極速 Nitro 狀態暴增速度)
-    const targetSpeed = isNitro ? MAX_SPEED * 1.35 : Math.min(BASE_SPEED + (this.distance / 100) * SPEED_ACCEL, MAX_SPEED);
-    this.speed += (targetSpeed - this.speed) * Math.min(dt * 3, 1);
+    // 3. 掉入無底深淵判定
+    if (mario.y > this.baseH + 50) {
+      this.lives--;
+      if (this.lives > 0) {
+        mario.x = this.cameraX + 60;
+        mario.y = 100;
+        mario.vy = 0;
+        mario.makeSmall();
+      } else {
+        this.onGameOver();
+        return;
+      }
+    }
 
-    // 3. 奔跑前進 (Z 軸負方向前進)
-    const moveZ = this.speed * dt;
-    this.player.mesh.position.z -= moveZ;
-    this.distance += moveZ * 0.4;
-    this.score += moveZ * 0.5 * this.multiplier;
+    // 4. 蘑菇更新與拾取
+    for (let i = this.mushrooms.length - 1; i >= 0; i--) {
+      const shroom = this.mushrooms[i];
+      shroom.update(dt, this.tiles);
 
-    // 4. 更新玩家主角
-    this.player.update(dt, this.speed);
+      if (
+        mario.x < shroom.x + shroom.width &&
+        mario.x + mario.width > shroom.x &&
+        mario.y < shroom.y + shroom.height &&
+        mario.y + mario.height > shroom.y
+      ) {
+        mario.makeSuper();
+        this.audio.playPowerup();
+        this.score += 1000;
+        this.mushrooms.splice(i, 1);
+      }
+    }
 
-    // 5. 更新相機跟隨 (平滑跟隨)
-    const targetCamZ = this.player.mesh.position.z + 7.5;
-    const targetCamX = this.player.mesh.position.x * 0.45;
-    this.camera.position.z += (targetCamZ - this.camera.position.z) * Math.min(dt * 12, 1);
-    this.camera.position.x += (targetCamX - this.camera.position.x) * Math.min(dt * 8, 1);
-    this.camera.position.y = 4.2 + (this.player.y * 0.25);
-    this.camera.lookAt(
-      this.player.mesh.position.x * 0.2,
-      1.6 + this.player.y * 0.2,
-      this.player.mesh.position.z - 12
-    );
+    // 5. 敵人碰撞 (踩踏判定)
+    for (let i = this.enemies.length - 1; i >= 0; i--) {
+      const enemy = this.enemies[i];
+      enemy.update(dt, this.tiles);
 
-    // 6. 光源同步前移
-    this.dirLight.position.z = this.player.mesh.position.z + 10;
-    this.dirLight.target.position.z = this.player.mesh.position.z - 10;
-    this.dirLight.target.updateMatrixWorld();
+      // 清理死後超時怪物
+      if (enemy.isDead && enemy.deadTimer > 0.4) {
+        this.enemies.splice(i, 1);
+        continue;
+      }
 
-    // 7. 更新跑道與實體管理器
-    this.trackMgr.update(this.player.mesh.position.z);
-    this.entityMgr.update(
-      dt,
-      this.player,
-      this.activePowerups,
-      this.onGameOver.bind(this),
-      this.collectCoin.bind(this),
-      this.collectPowerup.bind(this)
-    );
+      if (
+        !enemy.isDead &&
+        mario.x < enemy.x + enemy.width &&
+        mario.x + mario.width > enemy.x &&
+        mario.y < enemy.y + enemy.height &&
+        mario.y + mario.height > enemy.y
+      ) {
+        // 從上方踩怪 (Stomp) 或無敵星衝撞
+        if (mario.isStar) {
+          enemy.isDead = true;
+          this.audio.playStomp();
+          this.score += 400;
+        } else if (mario.vy > 0 && mario.y + mario.height - mario.vy * dt <= enemy.y + 12) {
+          if (enemy instanceof Goomba) {
+            enemy.isDead = true;
+            this.audio.playStomp();
+          } else if (enemy instanceof Koopa) {
+            if (!enemy.isShell) {
+              enemy.isShell = true;
+              enemy.vx = 0;
+              this.audio.playStomp();
+            } else {
+              // 踢飛龜殼
+              enemy.vx = 260;
+              this.audio.playStomp();
+            }
+          }
+          mario.vy = -480; // 踩怪反彈跳躍
+          this.score += 200;
+        } else {
+          // 被怪物正面撞擊傷害
+          if (mario.invulnerableTimer <= 0) {
+            if (mario.isSuper) {
+              mario.makeSmall();
+              this.audio.playBump();
+            } else {
+              this.lives--;
+              if (this.lives <= 0) {
+                this.onGameOver();
+                return;
+              } else {
+                mario.x -= 30;
+                mario.invulnerableTimer = 2.0;
+                this.audio.playBump();
+              }
+            }
+          }
+        }
+      }
+    }
 
-    // 8. 速度線粒子更新
-    this.speedParticles.update(this.player.mesh.position.z, isNitro);
+    // 6. 粒子更新
+    for (let i = this.particles.length - 1; i >= 0; i--) {
+      const p = this.particles[i];
+      p.update(dt);
+      if (p.life <= 0) this.particles.splice(i, 1);
+    }
 
-    // 9. 更新 HUD 儀表板
-    this.scoreDisplay.textContent = Math.floor(this.score).toLocaleString();
-    this.distanceDisplay.textContent = `${Math.floor(this.distance)} m`;
-    const speedRatio = Math.min((this.speed - BASE_SPEED) / (MAX_SPEED * 1.35 - BASE_SPEED), 1);
-    this.speedBar.style.width = `${Math.max(15, speedRatio * 100)}%`;
+    // 7. 相機鏡頭平滑跟隨 (不允許回頭，經典跑酷體驗)
+    const targetCamX = mario.x - 140;
+    if (targetCamX > this.cameraX) {
+      this.cameraX += (targetCamX - this.cameraX) * Math.min(dt * 8, 1);
+    }
+
+    // 8. 動態生成新地塊、回收身後地塊
+    if (this.nextChunkX < this.cameraX + this.baseW * 2) {
+      this.generateChunk();
+    }
+    // 釋放遠後方地塊
+    this.tiles = this.tiles.filter(t => t.x + t.w > this.cameraX - 100);
+
+    // 9. 更新 HUD
+    this.scoreDisplay.textContent = this.padScore(Math.floor(this.score));
+    this.coinsDisplay.textContent = this.coins < 10 ? '0' + this.coins : this.coins;
+    this.distanceDisplay.textContent = `${this.distance}m`;
+    this.livesDisplay.textContent = `♥ × ${this.lives}`;
+  }
+
+  createBrickDebris(x, y) {
+    const colors = ['#b84400', '#d86200', '#8b2e00'];
+    for (let i = 0; i < 6; i++) {
+      const vx = (Math.random() - 0.5) * 300;
+      const vy = -300 - Math.random() * 200;
+      this.particles.push(new Particle(x, y, vx, vy, colors[i % colors.length]));
+    }
+  }
+
+  render() {
+    const ctx = this.ctx;
+    ctx.clearRect(0, 0, this.baseW, this.baseH);
+
+    // 1. 經典馬力歐藍天背景
+    ctx.fillStyle = '#5c94fc';
+    ctx.fillRect(0, 0, this.baseW, this.baseH);
+
+    // 2. 背景像素白雲與遠山
+    ctx.fillStyle = '#ffffff';
+    for (let i = 0; i < 5; i++) {
+      const cx = ((i * 180 - this.cameraX * 0.2) % (this.baseW + 200)) - 50;
+      ctx.fillRect(cx, 40 + (i % 2) * 30, 48, 16);
+      ctx.fillRect(cx + 12, 30 + (i % 2) * 30, 24, 12);
+    }
+    // 綠色遠山
+    ctx.fillStyle = '#00a800';
+    for (let i = 0; i < 4; i++) {
+      const mx = ((i * 240 - this.cameraX * 0.4) % (this.baseW + 200)) - 60;
+      ctx.beginPath();
+      ctx.arc(mx + 40, this.baseH - 50, 45, Math.PI, 0);
+      ctx.fill();
+    }
+
+    // 3. 繪製地形與磚塊
+    this.tiles.forEach(tile => {
+      const dx = Math.floor(tile.x - this.cameraX);
+      const dy = Math.floor(tile.y);
+
+      if (dx + tile.w < 0 || dx > this.baseW) return;
+
+      if (tile.type === 'GROUND') {
+        // 地表綠草地皮
+        ctx.fillStyle = '#00a800';
+        ctx.fillRect(dx, dy, tile.w, 8);
+        // 泥土磚
+        ctx.fillStyle = '#c84c0c';
+        ctx.fillRect(dx, dy + 8, tile.w, tile.h - 8);
+        // 像素裝飾點
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(dx + 4, dy + 14, 4, 4);
+        ctx.fillRect(dx + 20, dy + 22, 4, 4);
+      } else if (tile.type === 'BRICK') {
+        ctx.fillStyle = '#b84400';
+        ctx.fillRect(dx, dy, tile.w, tile.h);
+        ctx.fillStyle = '#000000';
+        ctx.strokeRect(dx + 1, dy + 1, tile.w - 2, tile.h - 2);
+        ctx.fillRect(dx + 4, dy + 8, 10, 4);
+        ctx.fillRect(dx + 18, dy + 20, 10, 4);
+      } else if (tile.type === 'QUESTION') {
+        // 金黃問號磚 [ ? ]
+        ctx.fillStyle = '#fc9838';
+        ctx.fillRect(dx, dy, tile.w, tile.h);
+        ctx.fillStyle = '#000000';
+        ctx.strokeRect(dx + 1, dy + 1, tile.w - 2, tile.h - 2);
+        // 問號字樣
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '16px monospace';
+        ctx.fillText('?', dx + 11, dy + 22);
+      } else if (tile.type === 'EMPTY') {
+        // 頂擊後的空白金屬磚
+        ctx.fillStyle = '#8b5a2b';
+        ctx.fillRect(dx, dy, tile.w, tile.h);
+        ctx.fillStyle = '#000000';
+        ctx.strokeRect(dx + 1, dy + 1, tile.w - 2, tile.h - 2);
+        ctx.fillRect(dx + 3, dy + 3, 3, 3);
+        ctx.fillRect(dx + tile.w - 6, dy + 3, 3, 3);
+        ctx.fillRect(dx + 3, dy + tile.h - 6, 3, 3);
+        ctx.fillRect(dx + tile.w - 6, dy + tile.h - 6, 3, 3);
+      } else if (tile.type === 'PIPE') {
+        // 綠色水管
+        ctx.fillStyle = '#00a800';
+        ctx.fillRect(dx, dy, tile.w, tile.h);
+        // 水管頂沿
+        ctx.fillStyle = '#008000';
+        ctx.fillRect(dx - 2, dy, tile.w + 4, 16);
+        ctx.fillStyle = '#5cff5c';
+        ctx.fillRect(dx + 4, dy, 6, tile.h); // 高光反光帶
+      }
+    });
+
+    // 4. 繪製蘑菇
+    this.mushrooms.forEach(m => m.draw(ctx, this.cameraX));
+
+    // 5. 繪製敵人
+    this.enemies.forEach(e => e.draw(ctx, this.cameraX));
+
+    // 6. 繪製馬力歐主角
+    this.mario.draw(ctx, this.cameraX);
+
+    // 7. 繪製粒子碎片
+    this.particles.forEach(p => p.draw(ctx, this.cameraX));
   }
 }
 
-// 頁面載入完成後啟動遊戲管理器
+// 啟動遊戲
+let game = null;
 window.addEventListener('DOMContentLoaded', () => {
-  new GameManager();
+  game = new SuperMarioGame();
 });
