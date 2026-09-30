@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "MarioParkour",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "identifier": "com.hankyleisplay.marioparkour",
   "build": {
     "frontendDist": "../ui"
@@ -10,9 +10,9 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "Retro Arcade All-in-One - 全能經典小遊戲平台 (馬力歐跑酷 / 2048 / 俄羅斯方塊 / 貪吃蛇)",
+        "title": "Retro Arcade 8-in-1 - 八合一全能經典小遊戲平台 (馬力歐 8 大世界 / 2048 / 俄羅斯方塊 / 貪吃蛇 / 打磚塊 / 飛鳥 / 侵略者 / 小精靈)",
         "width": 1280,
-        "height": 760,
+        "height": 780,
         "minWidth": 860,
         "minHeight": 600,
         "resizable": true,
