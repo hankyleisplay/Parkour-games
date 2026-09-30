@@ -3,159 +3,387 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Super Mario Parkour - 超級馬力歐跑酷 (豪華版)</title>
+  <title>Retro Arcade All-in-One - 全能經典小遊戲平台 (含 AI Demo Mode)</title>
+  <link rel="icon" type="image/png" href="icon.png">
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div id="game-container">
-    <!-- 2D 像素遊戲畫布 -->
-    <canvas id="game-canvas"></canvas>
-
-    <!-- 復古馬力歐 HUD -->
-    <div id="hud" class="hidden">
-      <div class="hud-item">
-        <span class="hud-label">MARIO</span>
-        <span id="score-display" class="hud-val">000000</span>
-      </div>
-
-      <div class="hud-item coin-box">
-        <span class="coin-sprite">🪙</span>
-        <span class="coin-x">×</span>
-        <span id="coins-display" class="hud-val">00</span>
-      </div>
-
-      <div class="hud-item">
-        <span class="hud-label">WORLD</span>
-        <span id="world-display" class="hud-val">1 - 1</span>
-      </div>
-
-      <div class="hud-item">
-        <span class="hud-label">DISTANCE</span>
-        <span id="distance-display" class="hud-val">0m</span>
-      </div>
-
-      <div class="hud-item lives-box">
-        <span class="hud-label">LIVES</span>
-        <span id="lives-display" class="hud-val">♥ × 3</span>
-      </div>
-
-      <div class="hud-item power-indicator">
-        <span id="power-badge" class="hud-badge small">NORMAL</span>
-      </div>
-
-      <div class="hud-buttons">
-        <button id="sound-btn" class="retro-icon-btn" title="靜音/播放">🔊</button>
-        <button id="fullscreen-btn" class="retro-icon-btn" title="全螢幕">⛶</button>
+  <!-- ================= 頂部 All-in-One 遊戲平台導覽列 ================= -->
+  <header id="arcade-topbar">
+    <div class="brand-box" data-launch-game="hub">
+      <img src="icon.png" alt="Arcade Icon" class="brand-icon">
+      <div class="brand-text">
+        <span class="brand-title">ARCADE ALL-IN-ONE</span>
+        <span class="brand-sub">4-IN-1 AI GAME CENTER</span>
       </div>
     </div>
 
-    <!-- 提示框 -->
-    <div id="action-hint" class="action-hint hidden">STAGE CLEAR! +5000 PTS</div>
+    <nav class="nav-tabs">
+      <button class="nav-tab-btn" data-tab="hub">🏠 遊戲大廳</button>
+      <button class="nav-tab-btn active" data-tab="mario">🍄 馬力歐跑酷</button>
+      <button class="nav-tab-btn" data-tab="2048">🔢 2048</button>
+      <button class="nav-tab-btn" data-tab="tetris">🧱 俄羅斯方塊</button>
+      <button class="nav-tab-btn" data-tab="snake">🐍 貪吃蛇</button>
+    </nav>
 
-    <!-- 主選單 / 開始畫面 -->
-    <div id="start-screen" class="overlay-screen">
-      <div class="screen-content retro-card">
-        <div class="mario-logo-box">
-          <div class="title-sub">SUPER</div>
-          <h1 class="mario-title">MARIO PARKOUR</h1>
-          <div class="title-sub red">超 級 馬 力 歐 跑 酷 · 豪 華 版</div>
-        </div>
-
-        <div class="controls-guide">
-          <h3>🕹️ 冒險操作指南</h3>
-          <div class="guide-grid">
-            <div class="guide-item">
-              <span class="key-badge">A</span> / <span class="key-badge">D</span> 或 <span class="key-badge">←</span> <span class="key-badge">→</span>
-              <span class="guide-desc">左右奔跑移動</span>
-            </div>
-            <div class="guide-item">
-              <span class="key-badge">W</span> / <span class="key-badge">↑</span> / <span class="key-badge">SPACE</span>
-              <span class="guide-desc">跳躍（長按跳得更高）</span>
-            </div>
-            <div class="guide-item">
-              <span class="key-badge">SHIFT</span>
-              <span class="guide-desc">衝刺狂奔（跑速 +50%）</span>
-            </div>
-            <div class="guide-item">
-              <span class="key-badge">F</span> / <span class="key-badge">J</span>
-              <span class="guide-desc">發射彈跳火球（火焰形態）</span>
-            </div>
-            <div class="guide-item">
-              <span class="key-badge">S</span> / <span class="key-badge">↓</span>
-              <span class="guide-desc">下蹲 / 滑行穿過窄道</span>
-            </div>
-            <div class="guide-item">
-              <span class="key-badge">踩怪</span>
-              <span class="guide-desc">落下踩扁栗寶寶與烏龜借力反彈</span>
-            </div>
-          </div>
-          <p class="guide-tip">★ 頂擊 [?] 磚塊獲取超級蘑菇變大、火焰花射擊火球！每 500m 挑戰終點過關旗杆！</p>
-        </div>
-
-        <div class="high-score-preview">
-          <span>最高歷史得分：</span>
-          <span id="start-high-score">000000</span>
-        </div>
-
-        <button id="start-btn" class="mario-btn pulse-anim">
-          <span>START GAME (開始冒險)</span>
-        </button>
-      </div>
+    <div class="topbar-actions">
+      <button id="global-demo-btn" class="demo-toggle-btn" title="快捷鍵 [M] 切換 AI 自動遊玩">
+        <span>🤖 Demo Mode (AI 代玩)</span>
+      </button>
+      <button id="global-sound-btn" class="retro-icon-btn" title="靜音/播放">🔊</button>
+      <button id="global-fullscreen-btn" class="retro-icon-btn" title="全螢幕">⛶</button>
     </div>
+  </header>
 
-    <!-- 暫停畫面 -->
-    <div id="pause-screen" class="overlay-screen hidden">
-      <div class="screen-content retro-card">
-        <h2 class="section-title">PAUSED (暫停中)</h2>
-        <div class="btn-group">
-          <button id="resume-btn" class="mario-btn">繼續冒險</button>
-          <button id="pause-restart-btn" class="mario-btn yellow">重新開始</button>
-        </div>
-      </div>
-    </div>
+  <!-- ================= 主內容區 ================= -->
+  <main id="platform-main">
 
-    <!-- 遊戲結束結算畫面 -->
-    <div id="game-over-screen" class="overlay-screen hidden">
-      <div class="screen-content retro-card">
-        <h2 class="game-over-title">GAME OVER</h2>
-        <p class="game-over-subtitle">冒險中斷！</p>
-
-        <div class="stats-card">
-          <div class="stat-row">
-            <span>本次得分</span>
-            <span id="final-score" class="stat-val yellow-text">0</span>
-          </div>
-          <div id="new-record-badge" class="new-record hidden">★ NEW HIGH SCORE ★</div>
-          <div class="stat-row">
-            <span>奔跑距離</span>
-            <span id="final-distance" class="stat-val">0 m</span>
-          </div>
-          <div class="stat-row">
-            <span>收集金幣</span>
-            <span id="final-coins" class="stat-val">0</span>
-          </div>
-          <div class="stat-row">
-            <span>到達世界</span>
-            <span id="final-world" class="stat-val">1 - 1</span>
-          </div>
-          <div class="stat-row">
-            <span>歷史最高紀錄</span>
-            <span id="final-best-score" class="stat-val">0</span>
+    <!-- 0. 遊戲大廳 (Arcade Hub) -->
+    <section id="view-hub" class="platform-view hidden">
+      <div class="hub-container">
+        <div class="hub-header">
+          <img src="icon.png" alt="Platform Logo" class="hub-logo">
+          <div>
+            <h1 class="hub-title">ALL-IN-ONE RETRO ARCADE</h1>
+            <p class="hub-subtitle">四大經典街機遊戲合輯 · 全遊戲內建智慧 AI Demo Mode 自動遊玩（快捷鍵 <kbd>M</kbd>）</p>
           </div>
         </div>
 
-        <div class="btn-group">
-          <button id="restart-btn" class="mario-btn pulse-anim">
-            <span>TRY AGAIN (再來一局)</span>
-          </button>
+        <div class="hub-grid">
+          <!-- Card 1: Mario Parkour -->
+          <div class="hub-game-card">
+            <div class="card-badge">🔥 招牌跑酷</div>
+            <div class="card-icon">🍄</div>
+            <h2>超級馬力歐跑酷</h2>
+            <p>橫向捲軸無盡冒險！頂問號磚、吃火焰花發射彈跳火球、躲避食人花與踩扁栗寶寶！</p>
+            <div class="card-best">最高紀錄：<span id="hub-best-mario">0</span></div>
+            <div class="card-actions">
+              <button class="mario-btn small" data-launch-game="mario" data-launch-demo="false">🎮 開始玩</button>
+              <button class="mario-btn demo small" data-launch-game="mario" data-launch-demo="true">🤖 AI 演示</button>
+            </div>
+          </div>
+
+          <!-- Card 2: 2048 -->
+          <div class="hub-game-card">
+            <div class="card-badge">🧠 益智燒腦</div>
+            <div class="card-icon">🔢</div>
+            <h2>2048 數字方塊</h2>
+            <p>滑動合併相同數字，挑戰拼出 2048 黃金磚！內建 Expectimax 蛇形權重 AI 自動解題！</p>
+            <div class="card-best">最高紀錄：<span id="hub-best-2048">0</span></div>
+            <div class="card-actions">
+              <button class="mario-btn small" data-launch-game="2048" data-launch-demo="false">🎮 開始玩</button>
+              <button class="mario-btn demo small" data-launch-game="2048" data-launch-demo="true">🤖 AI 演示</button>
+            </div>
+          </div>
+
+          <!-- Card 3: Tetris -->
+          <div class="hub-game-card">
+            <div class="card-badge">⚡ 經典街機</div>
+            <div class="card-icon">🧱</div>
+            <h2>俄羅斯方塊 Tetris</h2>
+            <p>7 種經典方塊、落點預覽陰影與連消加分！內建 Dellacherie 演算法 AI 高速消行！</p>
+            <div class="card-best">最高紀錄：<span id="hub-best-tetris">0</span></div>
+            <div class="card-actions">
+              <button class="mario-btn small" data-launch-game="tetris" data-launch-demo="false">🎮 開始玩</button>
+              <button class="mario-btn demo small" data-launch-game="tetris" data-launch-demo="true">🤖 AI 演示</button>
+            </div>
+          </div>
+
+          <!-- Card 4: Snake -->
+          <div class="hub-game-card">
+            <div class="card-badge">🐍 街機始祖</div>
+            <div class="card-icon">🍎</div>
+            <h2>經典貪吃蛇 Snake</h2>
+            <p>吞食紅蘋果與黃金星果實不斷變長！內建 BFS 尋路與死胡同迴避 AI 自動覓食！</p>
+            <div class="card-best">最高紀錄：<span id="hub-best-snake">0</span></div>
+            <div class="card-actions">
+              <button class="mario-btn small" data-launch-game="snake" data-launch-demo="false">🎮 開始玩</button>
+              <button class="mario-btn demo small" data-launch-game="snake" data-launch-demo="true">🤖 AI 演示</button>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
+    </section>
+
+    <!-- 1. 超級馬力歐跑酷 (Super Mario Parkour) -->
+    <section id="game-container" class="platform-view">
+      <!-- 2D 像素遊戲畫布 -->
+      <canvas id="game-canvas"></canvas>
+
+      <!-- 復古馬力歐 HUD -->
+      <div id="hud" class="hidden">
+        <div class="hud-item">
+          <span class="hud-label">MARIO</span>
+          <span id="score-display" class="hud-val">000000</span>
+        </div>
+
+        <div class="hud-item coin-box">
+          <span class="coin-sprite">🪙</span>
+          <span class="coin-x">×</span>
+          <span id="coins-display" class="hud-val">00</span>
+        </div>
+
+        <div class="hud-item">
+          <span class="hud-label">WORLD</span>
+          <span id="world-display" class="hud-val">1 - 1</span>
+        </div>
+
+        <div class="hud-item">
+          <span class="hud-label">DISTANCE</span>
+          <span id="distance-display" class="hud-val">0m</span>
+        </div>
+
+        <div class="hud-item lives-box">
+          <span class="hud-label">LIVES</span>
+          <span id="lives-display" class="hud-val">♥ × 3</span>
+        </div>
+
+        <div class="hud-item power-indicator">
+          <span id="power-badge" class="hud-badge small">NORMAL</span>
+        </div>
+
+        <div class="hud-buttons">
+          <button id="mario-demo-btn" class="demo-mini-btn" title="AI 自動玩 (快捷鍵 M)">🤖 DEMO</button>
+          <button id="sound-btn" class="retro-icon-btn" title="靜音/播放">🔊</button>
+          <button id="fullscreen-btn" class="retro-icon-btn" title="全螢幕">⛶</button>
+        </div>
+      </div>
+
+      <!-- 提示框 -->
+      <div id="action-hint" class="action-hint hidden">STAGE CLEAR! +5000 PTS</div>
+
+      <!-- 主選單 / 開始畫面 -->
+      <div id="start-screen" class="overlay-screen">
+        <div class="screen-content retro-card">
+          <div class="mario-logo-box">
+            <div class="title-sub">SUPER</div>
+            <h1 class="mario-title">MARIO PARKOUR</h1>
+            <div class="title-sub red">超 級 馬 力 歐 跑 酷 · 豪 華 版</div>
+          </div>
+
+          <div class="controls-guide">
+            <h3>🕹️ 冒險操作指南</h3>
+            <div class="guide-grid">
+              <div class="guide-item">
+                <span class="key-badge">A</span> / <span class="key-badge">D</span> 或 <span class="key-badge">←</span> <span class="key-badge">→</span>
+                <span class="guide-desc">左右奔跑移動</span>
+              </div>
+              <div class="guide-item">
+                <span class="key-badge">W</span> / <span class="key-badge">↑</span> / <span class="key-badge">SPACE</span>
+                <span class="guide-desc">跳躍（長按跳得更高）</span>
+              </div>
+              <div class="guide-item">
+                <span class="key-badge">SHIFT</span>
+                <span class="guide-desc">衝刺狂奔（跑速 +50%）</span>
+              </div>
+              <div class="guide-item">
+                <span class="key-badge">F</span> / <span class="key-badge">J</span>
+                <span class="guide-desc">發射彈跳火球（火焰形態）</span>
+              </div>
+              <div class="guide-item">
+                <span class="key-badge">M</span>
+                <span class="guide-desc">切換 AI Demo Mode 自動玩</span>
+              </div>
+              <div class="guide-item">
+                <span class="key-badge">踩怪</span>
+                <span class="guide-desc">落下踩扁栗寶寶與烏龜借力反彈</span>
+              </div>
+            </div>
+            <p class="guide-tip">★ 點擊下方「🤖 DEMO MODE」即可觀賞 AI 自動跳過深淵、閃避食人花、吃道具與發射火球！</p>
+          </div>
+
+          <div class="high-score-preview">
+            <span>最高歷史得分：</span>
+            <span id="start-high-score">000000</span>
+          </div>
+
+          <div class="btn-group wrap-center">
+            <button id="start-btn" class="mario-btn pulse-anim">
+              <span>🎮 START GAME (開始冒險)</span>
+            </button>
+            <button id="start-demo-btn" class="mario-btn demo pulse-anim">
+              <span>🤖 DEMO MODE (AI 自動玩)</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 暫停畫面 -->
+      <div id="pause-screen" class="overlay-screen hidden">
+        <div class="screen-content retro-card">
+          <h2 class="section-title">PAUSED (暫停中)</h2>
+          <div class="btn-group">
+            <button id="resume-btn" class="mario-btn">繼續冒險</button>
+            <button id="pause-restart-btn" class="mario-btn yellow">重新開始</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 遊戲結束結算畫面 -->
+      <div id="game-over-screen" class="overlay-screen hidden">
+        <div class="screen-content retro-card">
+          <h2 class="game-over-title">GAME OVER</h2>
+          <p class="game-over-subtitle">冒險中斷！</p>
+
+          <div class="stats-card">
+            <div class="stat-row">
+              <span>本次得分</span>
+              <span id="final-score" class="stat-val yellow-text">0</span>
+            </div>
+            <div id="new-record-badge" class="new-record hidden">★ NEW HIGH SCORE ★</div>
+            <div class="stat-row">
+              <span>奔跑距離</span>
+              <span id="final-distance" class="stat-val">0 m</span>
+            </div>
+            <div class="stat-row">
+              <span>收集金幣</span>
+              <span id="final-coins" class="stat-val">0</span>
+            </div>
+            <div class="stat-row">
+              <span>到達世界</span>
+              <span id="final-world" class="stat-val">1 - 1</span>
+            </div>
+            <div class="stat-row">
+              <span>歷史最高紀錄</span>
+              <span id="final-best-score" class="stat-val">0</span>
+            </div>
+          </div>
+
+          <div class="btn-group">
+            <button id="restart-btn" class="mario-btn pulse-anim">
+              <span>TRY AGAIN (再來一局)</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. 2048 益智方塊視圖 -->
+    <section id="view-2048" class="platform-view mini-game-view hidden">
+      <div class="mini-game-layout">
+        <div class="mini-side-panel retro-card">
+          <h2 class="mini-title">🔢 2048</h2>
+          <p id="status-2048" class="mini-desc">使用 WASD 或 方向鍵 合併相同數字方塊！</p>
+
+          <div class="score-boxes">
+            <div class="score-box">
+              <span class="sb-label">SCORE</span>
+              <span id="score-2048" class="sb-val">0</span>
+            </div>
+            <div class="score-box">
+              <span class="sb-label">BEST</span>
+              <span id="best-2048" class="sb-val">0</span>
+            </div>
+          </div>
+
+          <div class="mini-btn-stack">
+            <button id="btn-2048-demo" class="mario-btn demo full-w">🤖 AI Demo Mode</button>
+            <button id="btn-2048-undo" class="mario-btn yellow full-w">↩️ 悔棋一步 (Undo)</button>
+            <button id="btn-2048-new" class="mario-btn full-w">🔄 新開一局</button>
+          </div>
+        </div>
+
+        <div class="board-2048-wrapper">
+          <div id="board-2048" class="board-2048"></div>
+          <div id="overlay-2048" class="mini-overlay hidden">
+            <h3 id="overlay-2048-title">GAME OVER!</h3>
+            <button id="btn-2048-retry" class="mario-btn">再試一次</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. 俄羅斯方塊 (Tetris) 視圖 -->
+    <section id="view-tetris" class="platform-view mini-game-view hidden">
+      <div class="mini-game-layout">
+        <div class="mini-side-panel retro-card">
+          <h2 class="mini-title">🧱 TETRIS</h2>
+          <p id="tetris-status" class="mini-desc">方向鍵移動/旋轉，空白鍵快速落下！</p>
+
+          <div class="next-piece-box">
+            <span>NEXT PIECE</span>
+            <canvas id="tetris-next-canvas" width="100" height="80"></canvas>
+          </div>
+
+          <div class="score-boxes">
+            <div class="score-box">
+              <span class="sb-label">SCORE</span>
+              <span id="tetris-score" class="sb-val">0</span>
+            </div>
+            <div class="score-box">
+              <span class="sb-label">BEST</span>
+              <span id="tetris-best" class="sb-val">0</span>
+            </div>
+            <div class="score-box">
+              <span class="sb-label">LINES</span>
+              <span id="tetris-lines" class="sb-val">0</span>
+            </div>
+            <div class="score-box">
+              <span class="sb-label">LEVEL</span>
+              <span id="tetris-level" class="sb-val">1</span>
+            </div>
+          </div>
+
+          <div class="mini-btn-stack">
+            <button id="btn-tetris-demo" class="mario-btn demo full-w">🤖 AI Demo Mode</button>
+            <button id="btn-tetris-new" class="mario-btn full-w">🔄 重新開始</button>
+          </div>
+        </div>
+
+        <div class="canvas-frame">
+          <canvas id="tetris-canvas" width="260" height="520"></canvas>
+          <div id="overlay-tetris" class="mini-overlay hidden">
+            <h3>GAME OVER!</h3>
+            <button id="btn-tetris-retry" class="mario-btn">再玩一局</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. 經典貪吃蛇 (Snake) 視圖 -->
+    <section id="view-snake" class="platform-view mini-game-view hidden">
+      <div class="mini-game-layout">
+        <div class="mini-side-panel retro-card">
+          <h2 class="mini-title">🐍 SNAKE</h2>
+          <p id="snake-status" class="mini-desc">使用 WASD 或 方向鍵 控制貪吃蛇吃蘋果！</p>
+
+          <div class="score-boxes">
+            <div class="score-box">
+              <span class="sb-label">SCORE</span>
+              <span id="snake-score" class="sb-val">0</span>
+            </div>
+            <div class="score-box">
+              <span class="sb-label">BEST</span>
+              <span id="snake-best" class="sb-val">0</span>
+            </div>
+            <div class="score-box">
+              <span class="sb-label">LENGTH</span>
+              <span id="snake-length" class="sb-val">3</span>
+            </div>
+          </div>
+
+          <div class="mini-btn-stack">
+            <button id="btn-snake-demo" class="mario-btn demo full-w">🤖 AI Demo Mode</button>
+            <button id="btn-snake-new" class="mario-btn full-w">🔄 重新開始</button>
+          </div>
+        </div>
+
+        <div class="canvas-frame">
+          <canvas id="snake-canvas" width="440" height="440"></canvas>
+          <div id="overlay-snake" class="mini-overlay hidden">
+            <h3>GAME OVER!</h3>
+            <button id="btn-snake-retry" class="mario-btn">再玩一局</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
 
   <script src="game.js"></script>
+  <script src="arcade.js"></script>
 </body>
 </html>

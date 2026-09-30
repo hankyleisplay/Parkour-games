@@ -9,15 +9,262 @@ body, html {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background-color: #000;
+  background-color: #0b0d17;
   font-family: 'Press Start 2P', monospace, sans-serif;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ================= 頂部 All-in-One 平台導覽列 ================= */
+#arcade-topbar {
+  height: 56px;
+  min-height: 56px;
+  width: 100%;
+  background: linear-gradient(90deg, #121528 0%, #1d1536 50%, #121528 100%);
+  border-bottom: 4px solid #000;
+  box-shadow: inset 0 -2px 0 #fcd116;
+  padding: 0 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 500;
+}
+
+.brand-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.brand-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  border: 2px solid #fcd116;
+  image-rendering: pixelated;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.brand-title {
+  font-size: 0.72rem;
+  color: #fcd116;
+  text-shadow: 2px 2px #000;
+}
+
+.brand-sub {
+  font-size: 0.48rem;
+  color: #00ff88;
+}
+
+.nav-tabs {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.nav-tab-btn {
+  background: #232946;
+  color: #b8c1ec;
+  border: 3px solid #000;
+  box-shadow: inset -2px -2px 0 #121629, inset 2px 2px 0 #394373;
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 0.62rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+
+.nav-tab-btn:hover {
+  background: #313a63;
   color: #fff;
 }
 
-#game-container {
+.nav-tab-btn.active {
+  background: #fcd116;
+  color: #000;
+  box-shadow: inset -2px -2px 0 #b88c00, inset 2px 2px 0 #fff59d;
+  transform: translateY(-1px);
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.demo-toggle-btn {
+  background: #6c2bd9;
+  color: #fff;
+  border: 3px solid #000;
+  box-shadow: inset -2px -2px 0 #3b1382, inset 2px 2px 0 #a472ff;
+  padding: 8px 14px;
+  font-family: inherit;
+  font-size: 0.62rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.demo-toggle-btn:hover {
+  background: #7e3af2;
+}
+
+.demo-toggle-btn.active-demo,
+.demo-mini-btn.active-demo,
+.mario-btn.demo.active-demo {
+  background: #00c853 !important;
+  color: #000 !important;
+  box-shadow: inset -2px -2px 0 #007029, inset 2px 2px 0 #69f0ae, 0 0 12px #00ff88 !important;
+  animation: pulseBtn 0.9s infinite;
+}
+
+.demo-mini-btn {
+  background: #6c2bd9;
+  color: #fff;
+  border: 3px solid #000;
+  box-shadow: inset -2px -2px 0 #3b1382, inset 2px 2px 0 #a472ff;
+  height: 38px;
+  padding: 0 10px;
+  font-family: inherit;
+  font-size: 0.6rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* ================= 主內容區與視圖容器 ================= */
+#platform-main {
+  flex: 1;
   position: relative;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: calc(100vh - 56px);
+  overflow: hidden;
+}
+
+.platform-view {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* ================= 0. 遊戲大廳 (Arcade Hub) ================= */
+#view-hub {
+  background: radial-gradient(circle at center, #1e1b4b 0%, #090a10 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.hub-container {
+  max-width: 1080px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.hub-header {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 4px solid #fcd116;
+  padding: 16px 22px;
+  box-shadow: 6px 6px 0 #000;
+}
+
+.hub-logo {
+  width: 68px;
+  height: 68px;
+  border: 3px solid #fff;
+  border-radius: 10px;
+}
+
+.hub-title {
+  font-size: 1.35rem;
+  color: #fcd116;
+  text-shadow: 3px 3px #000;
+  margin-bottom: 8px;
+}
+
+.hub-subtitle {
+  font-size: 0.68rem;
+  color: #e2e8f0;
+  line-height: 1.5;
+}
+
+.hub-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+
+.hub-game-card {
+  position: relative;
+  background: #fcd116;
+  color: #000;
+  border: 5px solid #000;
+  box-shadow: inset -4px -4px 0 #c49a00, inset 4px 4px 0 #fff875, 6px 6px 0 rgba(0,0,0,0.7);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.card-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #000;
+  color: #00ff88;
+  padding: 4px 8px;
+  font-size: 0.55rem;
+}
+
+.card-icon {
+  font-size: 2rem;
+}
+
+.hub-game-card h2 {
+  font-size: 0.95rem;
+  color: #e52521;
+  text-shadow: 1px 1px #fff;
+}
+
+.hub-game-card p {
+  font-size: 0.62rem;
+  line-height: 1.5;
+  color: #222;
+  flex: 1;
+}
+
+.card-best {
+  font-size: 0.65rem;
+  font-weight: bold;
+  background: #fff;
+  border: 2px solid #000;
+  padding: 5px 10px;
+  display: inline-block;
+  align-self: flex-start;
+}
+
+.card-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+/* ================= 1. 經典 MARIO 視圖與 HUD ================= */
+#game-container {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -34,13 +281,12 @@ body, html {
   display: block;
 }
 
-/* ================= 經典 MARIO HUD ================= */
 #hud {
   position: absolute;
-  top: 15px;
+  top: 12px;
   left: 0;
   width: 100%;
-  padding: 0 30px;
+  padding: 0 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -53,17 +299,17 @@ body, html {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 }
 
 .hud-label {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: #fff;
   letter-spacing: 1px;
 }
 
 .hud-val {
-  font-size: 1.05rem;
+  font-size: 1rem;
   color: #ffffff;
   font-weight: bold;
 }
@@ -125,9 +371,9 @@ body, html {
   border: 3px solid #000;
   box-shadow: inset -2px -2px 0 #8b0000, inset 2px 2px 0 #ff7f7f;
   color: #fff;
-  width: 38px;
-  height: 38px;
-  font-size: 1rem;
+  width: 36px;
+  height: 36px;
+  font-size: 0.95rem;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -142,14 +388,14 @@ body, html {
 /* 提示橫幅 */
 .action-hint {
   position: absolute;
-  top: 75px;
+  top: 70px;
   left: 50%;
   transform: translateX(-50%);
   background: #fcd116;
   color: #000;
   border: 4px solid #000;
   padding: 10px 24px;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: bold;
   box-shadow: 4px 4px 0 #000;
   z-index: 20;
@@ -179,14 +425,14 @@ body, html {
   background: #fcd116;
   border: 6px solid #000;
   box-shadow: inset -4px -4px 0 #c49a00, inset 4px 4px 0 #fff875, 8px 8px 0 rgba(0, 0, 0, 0.6);
-  padding: 25px 35px;
-  max-width: 660px;
+  padding: 22px 30px;
+  max-width: 680px;
   width: 92%;
   color: #000;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   text-align: center;
 }
 
@@ -198,7 +444,7 @@ body, html {
 }
 
 .title-sub {
-  font-size: 1rem;
+  font-size: 0.9rem;
   color: #00a800;
   text-shadow: 2px 2px #000;
   font-weight: bold;
@@ -209,7 +455,7 @@ body, html {
 }
 
 .mario-title {
-  font-size: 2rem;
+  font-size: 1.85rem;
   color: #e52521;
   text-shadow: 4px 4px 0 #000, -2px -2px 0 #fff;
   letter-spacing: 2px;
@@ -218,39 +464,39 @@ body, html {
 .controls-guide {
   background: #fff;
   border: 4px solid #000;
-  padding: 14px 16px;
+  padding: 12px 14px;
   width: 100%;
   border-radius: 4px;
 }
 
 .controls-guide h3 {
-  font-size: 0.8rem;
-  margin-bottom: 10px;
+  font-size: 0.78rem;
+  margin-bottom: 8px;
   color: #000;
 }
 
 .guide-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 6px;
 }
 
 .guide-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.6rem;
+  font-size: 0.58rem;
   background: #f4f4f4;
-  padding: 6px 8px;
+  padding: 5px 8px;
   border: 2px solid #ddd;
 }
 
 .key-badge {
   background: #00a800;
   color: #fff;
-  padding: 2px 6px;
+  padding: 2px 5px;
   border: 2px solid #000;
-  font-size: 0.6rem;
+  font-size: 0.56rem;
 }
 
 .guide-desc {
@@ -259,15 +505,15 @@ body, html {
 }
 
 .guide-tip {
-  font-size: 0.6rem;
+  font-size: 0.58rem;
   color: #e52521;
-  margin-top: 10px;
+  margin-top: 8px;
   font-weight: bold;
   line-height: 1.4;
 }
 
 .high-score-preview {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: #000;
   font-weight: bold;
 }
@@ -277,9 +523,9 @@ body, html {
   color: #fff;
   border: 4px solid #000;
   box-shadow: inset -3px -3px 0 #8b0000, inset 3px 3px 0 #ff8080, 4px 4px 0 #000;
-  padding: 14px 28px;
+  padding: 12px 22px;
   font-family: inherit;
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   font-weight: bold;
   cursor: pointer;
   letter-spacing: 1px;
@@ -292,12 +538,29 @@ body, html {
 
 .mario-btn:active {
   transform: translate(2px, 2px);
-  box-shadow: inset -1px -1px 0 #8b0000, inset 1px 1px 0 #ff8080, 2px 2px 0 #000;
 }
 
 .mario-btn.yellow {
   background: #00a800;
   box-shadow: inset -3px -3px 0 #005000, inset 3px 3px 0 #40ff40, 4px 4px 0 #000;
+}
+
+.mario-btn.demo {
+  background: #6c2bd9;
+  box-shadow: inset -3px -3px 0 #3b1382, inset 3px 3px 0 #a472ff, 4px 4px 0 #000;
+}
+
+.mario-btn.demo:hover {
+  background: #7e3af2;
+}
+
+.mario-btn.small {
+  padding: 8px 14px;
+  font-size: 0.65rem;
+}
+
+.full-w {
+  width: 100%;
 }
 
 .pulse-anim {
@@ -306,12 +569,17 @@ body, html {
 
 @keyframes bounceBtn {
   0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.04); }
+  50% { transform: scale(1.03); }
+}
+
+@keyframes pulseBtn {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.2); }
 }
 
 /* 結算卡片 */
 .game-over-title {
-  font-size: 2.2rem;
+  font-size: 2rem;
   color: #e52521;
   text-shadow: 4px 4px 0 #000;
 }
@@ -361,13 +629,181 @@ body, html {
   gap: 12px;
 }
 
+.wrap-center {
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ================= 2048 / Tetris / Snake 共用街機佈局 ================= */
+.mini-game-view {
+  background: radial-gradient(circle at center, #1b243b 0%, #090d16 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.mini-game-layout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  max-width: 960px;
+  width: 100%;
+}
+
+.mini-side-panel {
+  width: 300px;
+  max-width: 300px;
+  padding: 20px;
+  gap: 14px;
+}
+
+.mini-title {
+  font-size: 1.35rem;
+  color: #e52521;
+  text-shadow: 2px 2px #fff;
+}
+
+.mini-desc {
+  font-size: 0.6rem;
+  line-height: 1.5;
+  color: #111;
+  background: #fff;
+  border: 3px solid #000;
+  padding: 8px 10px;
+  width: 100%;
+}
+
+.score-boxes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  width: 100%;
+}
+
+.score-box {
+  background: #121629;
+  color: #fff;
+  border: 3px solid #000;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+
+.sb-label {
+  font-size: 0.52rem;
+  color: #fcd116;
+}
+
+.sb-val {
+  font-size: 0.85rem;
+  color: #fff;
+}
+
+.mini-btn-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.next-piece-box {
+  background: #121629;
+  border: 3px solid #000;
+  padding: 8px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.next-piece-box span {
+  font-size: 0.55rem;
+  color: #00ff88;
+}
+
+.canvas-frame {
+  position: relative;
+  border: 6px solid #000;
+  box-shadow: 0 0 0 4px #fcd116, 10px 10px 0 rgba(0, 0, 0, 0.7);
+  background: #0b0e17;
+  display: flex;
+}
+
+.mini-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.82);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  z-index: 20;
+}
+
+.mini-overlay h3 {
+  font-size: 1.4rem;
+  color: #fcd116;
+  text-shadow: 3px 3px #e52521;
+}
+
+/* ================= 2048 專屬棋盤與方塊色彩 ================= */
+.board-2048-wrapper {
+  position: relative;
+  background: #bbada0;
+  border: 6px solid #000;
+  box-shadow: 0 0 0 4px #fcd116, 10px 10px 0 rgba(0, 0, 0, 0.7);
+  padding: 12px;
+  border-radius: 6px;
+}
+
+.board-2048 {
+  display: grid;
+  grid-template-columns: repeat(4, 92px);
+  grid-template-rows: repeat(4, 92px);
+  gap: 10px;
+}
+
+.tile-2048 {
+  width: 92px;
+  height: 92px;
+  border-radius: 4px;
+  border: 3px solid rgba(0, 0, 0, 0.25);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.15rem;
+  font-weight: bold;
+  transition: transform 0.08s ease;
+}
+
+.tile-v-0 { background: rgba(238, 228, 218, 0.35); border-color: transparent; }
+.tile-v-2 { background: #eee4da; color: #776e65; }
+.tile-v-4 { background: #ede0c8; color: #776e65; }
+.tile-v-8 { background: #f2b179; color: #f9f6f2; }
+.tile-v-16 { background: #f59563; color: #f9f6f2; }
+.tile-v-32 { background: #f67c5f; color: #f9f6f2; }
+.tile-v-64 { background: #f65e3b; color: #f9f6f2; }
+.tile-v-128 { background: #edcf72; color: #f9f6f2; font-size: 0.95rem; }
+.tile-v-256 { background: #edcc61; color: #f9f6f2; font-size: 0.95rem; }
+.tile-v-512 { background: #edc850; color: #f9f6f2; font-size: 0.95rem; }
+.tile-v-1024 { background: #edc53f; color: #f9f6f2; font-size: 0.8rem; }
+.tile-v-2048 { background: #00e676; color: #000; font-size: 0.8rem; box-shadow: 0 0 12px #00ff88; }
+.tile-v-super { background: #6c2bd9; color: #fff; font-size: 0.75rem; }
+
 .hidden {
   display: none !important;
 }
 
-@media (max-width: 600px) {
-  #hud { padding: 0 10px; font-size: 0.65rem; }
-  .guide-grid { grid-template-columns: 1fr; }
-  .mario-title { font-size: 1.3rem; }
-  .retro-card { padding: 18px 12px; }
+@media (max-width: 820px) {
+  #arcade-topbar { height: auto; flex-wrap: wrap; padding: 8px; gap: 8px; }
+  .hub-grid { grid-template-columns: 1fr; }
+  .mini-game-layout { flex-direction: column; gap: 14px; }
+  .board-2048 { grid-template-columns: repeat(4, 68px); grid-template-rows: repeat(4, 68px); }
+  .tile-2048 { width: 68px; height: 68px; font-size: 0.85rem; }
 }
