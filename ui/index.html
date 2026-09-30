@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Retro Arcade All-in-One - 全能經典小遊戲平台 (含 AI Demo Mode)</title>
+  <title>Retro Arcade 8-in-1 - 全能經典小遊戲平台 (含 AI Demo Mode 與 8 大馬力歐關卡)</title>
   <link rel="icon" type="image/png" href="icon.png">
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -11,22 +11,26 @@
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <!-- ================= 頂部 All-in-One 遊戲平台導覽列 ================= -->
+  <!-- ================= 頂部 All-in-One 8合1 遊戲平台導覽列 ================= -->
   <header id="arcade-topbar">
     <div class="brand-box" data-launch-game="hub">
       <img src="icon.png" alt="Arcade Icon" class="brand-icon">
       <div class="brand-text">
-        <span class="brand-title">ARCADE ALL-IN-ONE</span>
-        <span class="brand-sub">4-IN-1 AI GAME CENTER</span>
+        <span class="brand-title">ARCADE 8-IN-1</span>
+        <span class="brand-sub">AI DEMO GAME CENTER</span>
       </div>
     </div>
 
     <nav class="nav-tabs">
-      <button class="nav-tab-btn" data-tab="hub">🏠 遊戲大廳</button>
-      <button class="nav-tab-btn active" data-tab="mario">🍄 馬力歐跑酷</button>
+      <button class="nav-tab-btn" data-tab="hub">🏠 大廳</button>
+      <button class="nav-tab-btn active" data-tab="mario">🍄 馬力歐</button>
       <button class="nav-tab-btn" data-tab="2048">🔢 2048</button>
-      <button class="nav-tab-btn" data-tab="tetris">🧱 俄羅斯方塊</button>
+      <button class="nav-tab-btn" data-tab="tetris">🧱 俄羅斯</button>
       <button class="nav-tab-btn" data-tab="snake">🐍 貪吃蛇</button>
+      <button class="nav-tab-btn" data-tab="breakout">🏓 打磚塊</button>
+      <button class="nav-tab-btn" data-tab="flappy">🐦 像素鳥</button>
+      <button class="nav-tab-btn" data-tab="invaders">👾 太空戰</button>
+      <button class="nav-tab-btn" data-tab="pacman">👻 小精靈</button>
     </nav>
 
     <div class="topbar-actions">
@@ -41,24 +45,24 @@
   <!-- ================= 主內容區 ================= -->
   <main id="platform-main">
 
-    <!-- 0. 遊戲大廳 (Arcade Hub) -->
+    <!-- 0. 遊戲大廳 (8-in-1 Arcade Hub) -->
     <section id="view-hub" class="platform-view hidden">
       <div class="hub-container">
         <div class="hub-header">
           <img src="icon.png" alt="Platform Logo" class="hub-logo">
           <div>
-            <h1 class="hub-title">ALL-IN-ONE RETRO ARCADE</h1>
-            <p class="hub-subtitle">四大經典街機遊戲合輯 · 全遊戲內建智慧 AI Demo Mode 自動遊玩（快捷鍵 <kbd>M</kbd>）</p>
+            <h1 class="hub-title">ALL-IN-ONE 8-IN-1 RETRO ARCADE</h1>
+            <p class="hub-subtitle">八大經典街機遊戲合輯 ＋ 馬力歐 8 大世界關卡 · 全遊戲支援智慧 AI Demo Mode 自動遊玩（快捷鍵 <kbd>M</kbd>）</p>
           </div>
         </div>
 
         <div class="hub-grid">
           <!-- Card 1: Mario Parkour -->
           <div class="hub-game-card">
-            <div class="card-badge">🔥 招牌跑酷</div>
+            <div class="card-badge">🔥 8大世界</div>
             <div class="card-icon">🍄</div>
             <h2>超級馬力歐跑酷</h2>
-            <p>橫向捲軸無盡冒險！頂問號磚、吃火焰花發射彈跳火球、躲避食人花與踩扁栗寶寶！</p>
+            <p>8 大主題關卡（草原、地下、雲端、熔岩城堡、沙漠、冰原、鬼屋、星際彩虹）＋無敵星與彈簧床！</p>
             <div class="card-best">最高紀錄：<span id="hub-best-mario">0</span></div>
             <div class="card-actions">
               <button class="mario-btn small" data-launch-game="mario" data-launch-demo="false">🎮 開始玩</button>
@@ -71,7 +75,7 @@
             <div class="card-badge">🧠 益智燒腦</div>
             <div class="card-icon">🔢</div>
             <h2>2048 數字方塊</h2>
-            <p>滑動合併相同數字，挑戰拼出 2048 黃金磚！內建 Expectimax 蛇形權重 AI 自動解題！</p>
+            <p>滑動合併相同數字挑戰 2048 黃金磚！內建 Expectimax 蛇形權重啟發式 AI 自動解題！</p>
             <div class="card-best">最高紀錄：<span id="hub-best-2048">0</span></div>
             <div class="card-actions">
               <button class="mario-btn small" data-launch-game="2048" data-launch-demo="false">🎮 開始玩</button>
@@ -84,7 +88,7 @@
             <div class="card-badge">⚡ 經典街機</div>
             <div class="card-icon">🧱</div>
             <h2>俄羅斯方塊 Tetris</h2>
-            <p>7 種經典方塊、落點預覽陰影與連消加分！內建 Dellacherie 演算法 AI 高速消行！</p>
+            <p>7 種標準方塊、Ghost 落點預覽與連消加分！內建 Dellacherie 演算法 AI 高速消行！</p>
             <div class="card-best">最高紀錄：<span id="hub-best-tetris">0</span></div>
             <div class="card-actions">
               <button class="mario-btn small" data-launch-game="tetris" data-launch-demo="false">🎮 開始玩</button>
@@ -97,20 +101,71 @@
             <div class="card-badge">🐍 街機始祖</div>
             <div class="card-icon">🍎</div>
             <h2>經典貪吃蛇 Snake</h2>
-            <p>吞食紅蘋果與黃金星果實不斷變長！內建 BFS 尋路與死胡同迴避 AI 自動覓食！</p>
+            <p>吞食紅蘋果與黃金星果實不斷變長！內建 BFS 尋路與死胡同空間驗證 AI 自動覓食！</p>
             <div class="card-best">最高紀錄：<span id="hub-best-snake">0</span></div>
             <div class="card-actions">
               <button class="mario-btn small" data-launch-game="snake" data-launch-demo="false">🎮 開始玩</button>
               <button class="mario-btn demo small" data-launch-game="snake" data-launch-demo="true">🤖 AI 演示</button>
             </div>
           </div>
+
+          <!-- Card 5: Breakout -->
+          <div class="hub-game-card">
+            <div class="card-badge">🏓 物理彈射</div>
+            <div class="card-icon">🧱</div>
+            <h2>霓虹打磚塊 Breakout</h2>
+            <p>多球分裂與加長反射板膠囊、多層裝甲磚塊！內建物理反射軌跡預測 AI 自動接球！</p>
+            <div class="card-best">最高紀錄：<span id="hub-best-breakout">0</span></div>
+            <div class="card-actions">
+              <button class="mario-btn small" data-launch-game="breakout" data-launch-demo="false">🎮 開始玩</button>
+              <button class="mario-btn demo small" data-launch-game="breakout" data-launch-demo="true">🤖 AI 演示</button>
+            </div>
+          </div>
+
+          <!-- Card 6: Flappy Bird -->
+          <div class="hub-game-card">
+            <div class="card-badge">🐦 極限反應</div>
+            <div class="card-icon">🐦</div>
+            <h2>像素飛鳥 Flappy Bird</h2>
+            <p>拍動翅膀精準穿越高低水管縫隙！內建穿管高度預判自動巡航 AI 零失誤飛行！</p>
+            <div class="card-best">最高紀錄：<span id="hub-best-flappy">0</span></div>
+            <div class="card-actions">
+              <button class="mario-btn small" data-launch-game="flappy" data-launch-demo="false">🎮 開始玩</button>
+              <button class="mario-btn demo small" data-launch-game="flappy" data-launch-demo="true">🤖 AI 演示</button>
+            </div>
+          </div>
+
+          <!-- Card 7: Space Invaders -->
+          <div class="hub-game-card">
+            <div class="card-badge">👾 星際射擊</div>
+            <div class="card-icon">🛸</div>
+            <h2>太空侵略者 Invaders</h2>
+            <p>迎戰壓境的外星艦隊與密集雷射彈幕！內建彈道閃避與弱點狙擊 AI 自動迎敵！</p>
+            <div class="card-best">最高紀錄：<span id="hub-best-invaders">0</span></div>
+            <div class="card-actions">
+              <button class="mario-btn small" data-launch-game="invaders" data-launch-demo="false">🎮 開始玩</button>
+              <button class="mario-btn demo small" data-launch-game="invaders" data-launch-demo="true">🤖 AI 演示</button>
+            </div>
+          </div>
+
+          <!-- Card 8: Pac-Man -->
+          <div class="hub-game-card">
+            <div class="card-badge">👻 迷宮追逐</div>
+            <div class="card-icon">🍒</div>
+            <h2>迷宮小精靈 Pac-Man</h2>
+            <p>穿梭霓虹迷宮吃光豆子、吃下大力丸反噬四大鬼魂！內建 BFS 尋豆與鬼魂迴避 AI！</p>
+            <div class="card-best">最高紀錄：<span id="hub-best-pacman">0</span></div>
+            <div class="card-actions">
+              <button class="mario-btn small" data-launch-game="pacman" data-launch-demo="false">🎮 開始玩</button>
+              <button class="mario-btn demo small" data-launch-game="pacman" data-launch-demo="true">🤖 AI 演示</button>
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- 1. 超級馬力歐跑酷 (Super Mario Parkour) -->
+    <!-- 1. 超級馬力歐跑酷 (Super Mario Parkour - 8 Worlds) -->
     <section id="game-container" class="platform-view">
-      <!-- 2D 像素遊戲畫布 -->
       <canvas id="game-canvas"></canvas>
 
       <!-- 復古馬力歐 HUD -->
@@ -127,8 +182,8 @@
         </div>
 
         <div class="hud-item">
-          <span class="hud-label">WORLD</span>
-          <span id="world-display" class="hud-val">1 - 1</span>
+          <span class="hud-label">STAGE</span>
+          <span id="world-display" class="hud-val">1-1 陽光蘑菇草原</span>
         </div>
 
         <div class="hud-item">
@@ -146,6 +201,16 @@
         </div>
 
         <div class="hud-buttons">
+          <select id="mario-stage-select" class="retro-stage-select" title="快速切換馬力歐關卡">
+            <option value="1-1">1-1 蘑菇草原</option>
+            <option value="1-2">1-2 地下迷宮</option>
+            <option value="1-3">1-3 雲端浮島</option>
+            <option value="1-4">1-4 熔岩城堡</option>
+            <option value="2-1">2-1 金字塔沙漠</option>
+            <option value="2-2">2-2 冰封雪原</option>
+            <option value="2-3">2-3 幽靈鬼屋</option>
+            <option value="2-4">2-4 星際彩虹</option>
+          </select>
           <button id="mario-demo-btn" class="demo-mini-btn" title="AI 自動玩 (快捷鍵 M)">🤖 DEMO</button>
           <button id="sound-btn" class="retro-icon-btn" title="靜音/播放">🔊</button>
           <button id="fullscreen-btn" class="retro-icon-btn" title="全螢幕">⛶</button>
@@ -161,7 +226,22 @@
           <div class="mario-logo-box">
             <div class="title-sub">SUPER</div>
             <h1 class="mario-title">MARIO PARKOUR</h1>
-            <div class="title-sub red">超 級 馬 力 歐 跑 酷 · 豪 華 版</div>
+            <div class="title-sub red">超 級 馬 力 歐 跑 酷 · 8 大 世 界 關 卡 豪 華 版</div>
+          </div>
+
+          <!-- 8 大世界關卡選擇器 -->
+          <div class="stage-picker-box">
+            <h3>🌍 選擇冒險世界關卡 (8 Worlds)</h3>
+            <div class="stage-grid">
+              <button class="stage-chip active-stage" data-mario-stage="1-1">1-1 🍄 蘑菇草原</button>
+              <button class="stage-chip" data-mario-stage="1-2">1-2 🧱 地下迷宮</button>
+              <button class="stage-chip" data-mario-stage="1-3">1-3 ☁️ 雲端浮島</button>
+              <button class="stage-chip" data-mario-stage="1-4">1-4 🌋 熔岩城堡</button>
+              <button class="stage-chip" data-mario-stage="2-1">2-1 🏜️ 金字塔沙漠</button>
+              <button class="stage-chip" data-mario-stage="2-2">2-2 ❄️ 冰封雪原</button>
+              <button class="stage-chip" data-mario-stage="2-3">2-3 👻 幽靈鬼屋</button>
+              <button class="stage-chip" data-mario-stage="2-4">2-4 🌈 星際彩虹</button>
+            </div>
           </div>
 
           <div class="controls-guide">
@@ -188,11 +268,10 @@
                 <span class="guide-desc">切換 AI Demo Mode 自動玩</span>
               </div>
               <div class="guide-item">
-                <span class="key-badge">踩怪</span>
-                <span class="guide-desc">落下踩扁栗寶寶與烏龜借力反彈</span>
+                <span class="key-badge">新機關</span>
+                <span class="guide-desc">彈簧床、移動雲台、無敵星、砲彈與幽靈</span>
               </div>
             </div>
-            <p class="guide-tip">★ 點擊下方「🤖 DEMO MODE」即可觀賞 AI 自動跳過深淵、閃避食人花、吃道具與發射火球！</p>
           </div>
 
           <div class="high-score-preview">
@@ -376,6 +455,162 @@
           <div id="overlay-snake" class="mini-overlay hidden">
             <h3>GAME OVER!</h3>
             <button id="btn-snake-retry" class="mario-btn">再玩一局</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. 霓虹打磚塊 (Breakout) 視圖 -->
+    <section id="view-breakout" class="platform-view mini-game-view hidden">
+      <div class="mini-game-layout">
+        <div class="mini-side-panel retro-card">
+          <h2 class="mini-title">🏓 BREAKOUT</h2>
+          <p id="breakout-status" class="mini-desc">滑鼠或 A/D/方向鍵 移動反射板擊碎所有霓虹磚塊！</p>
+
+          <div class="score-boxes">
+            <div class="score-box">
+              <span class="sb-label">SCORE</span>
+              <span id="breakout-score" class="sb-val">0</span>
+            </div>
+            <div class="score-box">
+              <span class="sb-label">BEST</span>
+              <span id="breakout-best" class="sb-val">0</span>
+            </div>
+            <div class="score-box">
+              <span class="sb-label">LIVES</span>
+              <span id="breakout-lives" class="sb-val">♥ × 3</span>
+            </div>
+            <div class="score-box">
+              <span class="sb-label">LEVEL</span>
+              <span id="breakout-level" class="sb-val">1</span>
+            </div>
+          </div>
+
+          <div class="mini-btn-stack">
+            <button id="btn-breakout-demo" class="mario-btn demo full-w">🤖 AI Demo Mode</button>
+            <button id="btn-breakout-new" class="mario-btn full-w">🔄 重新開始</button>
+          </div>
+        </div>
+
+        <div class="canvas-frame">
+          <canvas id="breakout-canvas" width="480" height="440"></canvas>
+          <div id="overlay-breakout" class="mini-overlay hidden">
+            <h3>GAME OVER!</h3>
+            <button id="btn-breakout-retry" class="mario-btn">再玩一局</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. 像素飛鳥 (Flappy Bird) 視圖 -->
+    <section id="view-flappy" class="platform-view mini-game-view hidden">
+      <div class="mini-game-layout">
+        <div class="mini-side-panel retro-card">
+          <h2 class="mini-title">🐦 FLAPPY</h2>
+          <p id="flappy-status" class="mini-desc">按 空白鍵 / W / 滑鼠點擊 拍動翅膀穿過水管縫隙！</p>
+
+          <div class="score-boxes">
+            <div class="score-box">
+              <span class="sb-label">SCORE</span>
+              <span id="flappy-score" class="sb-val">0</span>
+            </div>
+            <div class="score-box">
+              <span class="sb-label">BEST</span>
+              <span id="flappy-best" class="sb-val">0</span>
+            </div>
+          </div>
+
+          <div class="mini-btn-stack">
+            <button id="btn-flappy-demo" class="mario-btn demo full-w">🤖 AI Demo Mode</button>
+            <button id="btn-flappy-new" class="mario-btn full-w">🔄 重新開始</button>
+          </div>
+        </div>
+
+        <div class="canvas-frame">
+          <canvas id="flappy-canvas" width="480" height="440"></canvas>
+          <div id="overlay-flappy" class="mini-overlay hidden">
+            <h3>GAME OVER!</h3>
+            <button id="btn-flappy-retry" class="mario-btn">再玩一局</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. 太空侵略者 (Space Invaders) 視圖 -->
+    <section id="view-invaders" class="platform-view mini-game-view hidden">
+      <div class="mini-game-layout">
+        <div class="mini-side-panel retro-card">
+          <h2 class="mini-title">👾 INVADERS</h2>
+          <p id="invaders-status" class="mini-desc">A/D 或 方向鍵 移動戰機，空白鍵發射電漿雷射！</p>
+
+          <div class="score-boxes">
+            <div class="score-box">
+              <span class="sb-label">SCORE</span>
+              <span id="invaders-score" class="sb-val">0</span>
+            </div>
+            <div class="score-box">
+              <span class="sb-label">BEST</span>
+              <span id="invaders-best" class="sb-val">0</span>
+            </div>
+            <div class="score-box">
+              <span class="sb-label">WAVE</span>
+              <span id="invaders-wave" class="sb-val">1</span>
+            </div>
+            <div class="score-box">
+              <span class="sb-label">LIVES</span>
+              <span id="invaders-lives" class="sb-val">♥ × 3</span>
+            </div>
+          </div>
+
+          <div class="mini-btn-stack">
+            <button id="btn-invaders-demo" class="mario-btn demo full-w">🤖 AI Demo Mode</button>
+            <button id="btn-invaders-new" class="mario-btn full-w">🔄 重新開始</button>
+          </div>
+        </div>
+
+        <div class="canvas-frame">
+          <canvas id="invaders-canvas" width="480" height="440"></canvas>
+          <div id="overlay-invaders" class="mini-overlay hidden">
+            <h3>GAME OVER!</h3>
+            <button id="btn-invaders-retry" class="mario-btn">再玩一局</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. 迷宮小精靈 (Pac-Man) 視圖 -->
+    <section id="view-pacman" class="platform-view mini-game-view hidden">
+      <div class="mini-game-layout">
+        <div class="mini-side-panel retro-card">
+          <h2 class="mini-title">👻 PAC-MAN</h2>
+          <p id="pacman-status" class="mini-desc">使用 WASD 或 方向鍵 吃光迷宮豆子，吃大力丸反噬鬼魂！</p>
+
+          <div class="score-boxes">
+            <div class="score-box">
+              <span class="sb-label">SCORE</span>
+              <span id="pacman-score" class="sb-val">0</span>
+            </div>
+            <div class="score-box">
+              <span class="sb-label">BEST</span>
+              <span id="pacman-best" class="sb-val">0</span>
+            </div>
+            <div class="score-box">
+              <span class="sb-label">LIVES</span>
+              <span id="pacman-lives" class="sb-val">♥ × 3</span>
+            </div>
+          </div>
+
+          <div class="mini-btn-stack">
+            <button id="btn-pacman-demo" class="mario-btn demo full-w">🤖 AI Demo Mode</button>
+            <button id="btn-pacman-new" class="mario-btn full-w">🔄 重新開始</button>
+          </div>
+        </div>
+
+        <div class="canvas-frame">
+          <canvas id="pacman-canvas" width="440" height="440"></canvas>
+          <div id="overlay-pacman" class="mini-overlay hidden">
+            <h3>GAME OVER!</h3>
+            <button id="btn-pacman-retry" class="mario-btn">再玩一局</button>
           </div>
         </div>
       </div>
