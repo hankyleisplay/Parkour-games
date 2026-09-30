@@ -1,7 +1,7 @@
 {
   "name": "mario-parkour",
-  "version": "0.2.0",
-  "description": "Retro Arcade All-in-One - 全能經典小遊戲平台 (馬力歐跑酷 / 2048 / 俄羅斯方塊 / 貪吃蛇 + AI Demo Mode)",
+  "version": "0.3.0",
+  "description": "Retro Arcade 8-in-1 - 八合一全能經典小遊戲平台 (馬力歐 8 大世界 / 2048 / 俄羅斯方塊 / 貪吃蛇 / 打磚塊 / 飛鳥 / 侵略者 / 小精靈 + AI Demo Mode)",
   "private": true,
   "scripts": {
     "tauri": "tauri",

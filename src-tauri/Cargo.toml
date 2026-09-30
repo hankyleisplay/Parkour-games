@@ -1,7 +1,7 @@
 [package]
 name = "mario-parkour"
-version = "0.1.0"
-description = "Super Mario Parkour - 超級馬力歐跑酷 (Tauri + Rust)"
+version = "0.3.0"
+description = "Retro Arcade 8-in-1 - 八合一全能經典小遊戲平台 (Tauri + Rust)"
 authors = ["hankyleisplay <hankyleisplay@gmail.com>"]
 edition = "2021"
 
