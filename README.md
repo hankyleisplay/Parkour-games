@@ -1,65 +1,46 @@
-# 🍄 Super Mario Parkour - 超級馬力歐跑酷
+# 🕹️ Retro Arcade All-in-One - 全能經典小遊戲平台 (含 AI Demo Mode)
 
 [![Build and Release](https://github.com/hankyleisplay/Parkour-games/actions/workflows/build.yml/badge.svg)](https://github.com/hankyleisplay/Parkour-games/actions/workflows/build.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-《**Super Mario Parkour (超級馬力歐跑酷)**》是一款基於 **Tauri + Rust** 原生桌面視窗與 HTML5 Canvas 復古物理引擎打造的經典橫向捲軸冒險跑酷遊戲。
-
-玩家扮演經典紅帽冒險家，在無盡延伸的蘑菇王國中奔跑、跳躍頂磚塊、踩扁栗寶寶與綠烏龜，收集金幣與超級蘑菇，挑戰最高積分！
+《**Retro Arcade All-in-One**》是一款基於 **Tauri + Rust** 原生桌面視窗與 HTML5 Canvas 打造的 **四合一經典街機小遊戲平台**，內建專屬像素街機應用程式圖標與 **🤖 AI Demo Mode（AI 自動遊玩系統）**！
 
 ---
 
-## 🎮 經典馬力歐特色機制
+## 🎮 四大內建遊戲與 AI Demo Mode 演算法
 
-- **流暢跑酷動作**：
-  - **左右奔跑與慣性**：具備加速度、減速煞車打滑手感。
-  - **彈性跳躍**：按住跳躍鍵越久跳得越高；在空中踩中怪物會強力反彈起跳！
-  - **下蹲滑行**：鑽過矮通道或避開高處障礙。
-- **經典機關與磚塊**：
-  - ❓ **問號磚塊 `[ ? ]`**：由下方頂擊，彈出金幣、超級蘑菇或強化道具。
-  - 🧱 **普通磚塊 `[ # ]`**：普通馬力歐頂擊震動，吃蘑菇變大後頂擊可直接擊碎磚塊！
-  - 🟩 **綠色水管 (Pipes)**：不同高低段差障礙。
-  - 🕳️ **深淵深谷**：考驗跑酷起跳時機。
-- **經典怪物敵對**：
-  - 🌰 **栗寶寶 (Goomba)**：巡邏前進，從上方踩踏立即消滅。
-  - 🐢 **綠烏龜 (Koopa)**：踩踏後縮進龜殼，再踢一腳可在地面高速滑行撞翻前方整排怪物！
-- **成長強化道具**：
-  - 🍄 **超級蘑菇 (Super Mushroom)**：吃下後身形變大，獲得額外生命護盾！
-  - ⭐ **無敵星 (Super Star)**：無敵彩虹衝刺，撞飛一切敵人！
-- **純代碼合成 8-Bit 晶片音樂 (Web Audio API)**：
-  - 頂磚聲、吃金幣「叮叮」聲、踩怪「啵」聲、升級琶音、陣亡音樂，以及輕快的 8-bit 背景音樂，完全不依賴任何外部音訊檔！
+| 遊戲名稱 | 核心玩法特色 | 🤖 內建 AI Demo Mode 技術 |
+| :--- | :--- | :--- |
+| 🍄 **超級馬力歐跑酷 (Mario Parkour)** | 橫向捲軸無盡跑酷、頂 `[?]` 磚塊、吃超級蘑菇與火焰花發射彈跳火球、水管食人花、踩栗寶寶與過關旗杆！ | **地形與威脅感知 AI**：自動偵測前方深淵斷崖助跑大跳、判斷水管食人花伸縮時機駐足閃避、自動發射火球與頂擊問號磚塊 |
+| 🔢 **2048 益智方塊 (2048 Puzzle)** | 經典 4×4 數字滑動合併、支援悔棋一步 (Undo) 與歷史最高分紀錄 | **Expectimax 蛇形權重啟發式 AI**：結合蛇形遞減權重矩陣、平滑度與空格最大化評估，高速自動合成大數字磚 |
+| 🧱 **俄羅斯方塊 (Tetris Arcade)** | 7 種標準方塊、Ghost Piece 落點預覽陰影、Next Piece 預告與等級加速 | **Pierre Dellacherie 演算法 AI**：針對所有旋轉角度與落點計算總高度、消行數、空洞懲罰與凹凸度，最佳化高速堆疊消行 |
+| 🐍 **經典貪吃蛇 (Retro Snake)** | 吞食紅蘋果與黃金星果實（+300 分）不斷變長，棋盤格復古視覺 | **BFS 尋路 + 存活空間驗證 AI**：以廣度優先搜尋最短路徑，並搭配 Flood-Fill 驗證吃蘋果後是否仍具備安全存活空間，避免進入死胡同 |
 
 ---
 
 ## 🕹️ 操作指南
 
-| 鍵盤按鍵 | 功能說明 |
-| :--- | :--- |
-| <kbd>A</kbd> / <kbd>D</kbd> 或 <kbd>←</kbd> / <kbd>→</kbd> | 左右移動奔跑 |
-| <kbd>W</kbd> / <kbd>↑</kbd> / <kbd>Space</kbd> | 跳躍（長按跳得更高） |
-| <kbd>S</kbd> / <kbd>↓</kbd> | 下蹲 / 滑行 |
-| **空中落下踩踏怪物** | 踩扁栗寶寶 / 烏龜縮殼反彈跳躍 |
-| <kbd>ESC</kbd> / <kbd>P</kbd> | 暫停遊戲 |
-| <kbd>F11</kbd> | 全螢幕切換 |
-| **觸控螢幕** | 支援手指滑動手勢與點擊跳躍 |
+- **頂部平台導覽列**：隨時一鍵切換「🏠 遊戲大廳」、「🍄 馬力歐跑酷」、「🔢 2048」、「🧱 俄羅斯方塊」、「🐍 貪吃蛇」。
+- **🤖 Demo Mode 按鍵**：
+  - 點擊頂部導覽列的 **「🤖 Demo Mode (AI 代玩)」** 按鈕、各遊戲內的 **「🤖 AI Demo Mode」** 按鈕，或直接按下鍵盤快捷鍵 <kbd>M</kbd>，即可隨時讓 AI 接手自動遊玩！
+- **通用快捷鍵**：
+  - <kbd>WASD</kbd> 或 <kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd>：移動 / 滑動 / 旋轉
+  - <kbd>Space</kbd>：馬力歐跳躍 / 俄羅斯方塊瞬間硬降 (Hard Drop)
+  - <kbd>F</kbd> 或 <kbd>J</kbd>：馬力歐火焰形態發射彈跳火球
+  - <kbd>M</kbd>：一鍵開啟 / 關閉 **AI Demo Mode**
+  - <kbd>P</kbd> / <kbd>ESC</kbd>：暫停遊戲
 
 ---
 
 ## 🖥️ 本機運行與 Tauri 編譯
 
 ### 方式一：直接在瀏覽器遊玩（免安裝、最快速）
-雙擊專案目錄下的 `ui/index.html` 或 `index.html`，即可在任何瀏覽器以 60FPS 享受流暢復古跑酷！
+雙擊專案目錄下的 `ui/index.html` 或 `index.html`，即可在瀏覽器以 60FPS 暢玩四合一小遊戲平台與 AI Demo Mode！
 
-### 方式二：Tauri + Rust 原生視窗啟動
-若本機已安裝 Rust 與 Node.js：
+### 方式二：Tauri + Rust 原生桌面應用啟動
 ```bash
+npm install
 npm run dev
-# 或
-cargo tauri dev
+# 或編譯正式版安裝包與執行檔
+npm run build
 ```
-
-### 方式三：下載已編譯好的 Windows 桌面執行檔 (.exe)
-本專案已配置 GitHub Actions 雲端 CI/CD 工作流：
-1. 進入 [GitHub Actions 頁面](https://github.com/hankyleisplay/Parkour-games/actions)。
-2. 點擊最新一次的建置紀錄。
-3. 在 **Artifacts** 區塊直接下載已編譯好的 Windows 原生執行檔 `MarioParkour.exe`！

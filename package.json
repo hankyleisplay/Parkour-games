@@ -1,7 +1,7 @@
 {
   "name": "mario-parkour",
-  "version": "0.1.0",
-  "description": "Super Mario Parkour - 超級馬力歐跑酷 (Tauri + Rust)",
+  "version": "0.2.0",
+  "description": "Retro Arcade All-in-One - 全能經典小遊戲平台 (馬力歐跑酷 / 2048 / 俄羅斯方塊 / 貪吃蛇 + AI Demo Mode)",
   "private": true,
   "scripts": {
     "tauri": "tauri",

@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "MarioParkour",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "identifier": "com.hankyleisplay.marioparkour",
   "build": {
     "frontendDist": "../ui"
@@ -10,11 +10,11 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "Super Mario Parkour - 超級馬力歐跑酷",
+        "title": "Retro Arcade All-in-One - 全能經典小遊戲平台 (馬力歐跑酷 / 2048 / 俄羅斯方塊 / 貪吃蛇)",
         "width": 1280,
-        "height": 720,
-        "minWidth": 800,
-        "minHeight": 500,
+        "height": 760,
+        "minWidth": 860,
+        "minHeight": 600,
         "resizable": true,
         "fullscreen": false,
         "center": true
