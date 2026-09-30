@@ -839,6 +839,199 @@ class FireFlower {
   }
 }
 
+// 無敵星星道具 (Super Star)
+class StarItem {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.width = 26;
+    this.height = 26;
+    this.vx = 110;
+    this.vy = -320;
+  }
+
+  update(dt, tiles) {
+    this.vy += GRAVITY * 0.8 * dt;
+    this.x += this.vx * dt;
+    this.y += this.vy * dt;
+
+    tiles.forEach(tile => {
+      if (tile.type === 'EMPTY' || tile.type === 'LAVA') return;
+      if (
+        this.x < tile.x + tile.w &&
+        this.x + this.width > tile.x &&
+        this.y < tile.y + tile.h &&
+        this.y + this.height > tile.y
+      ) {
+        if (this.vy > 0 && this.y + this.height - this.vy * 0.05 <= tile.y + 8) {
+          this.y = tile.y - this.height;
+          this.vy = -380;
+        } else {
+          this.vx = -this.vx;
+        }
+      }
+    });
+  }
+
+  draw(ctx, cameraX) {
+    const drawX = Math.floor(this.x - cameraX);
+    const drawY = Math.floor(this.y);
+    const colors = ['#fcd116', '#ff3838', '#00ff88', '#00e5ff'];
+    ctx.fillStyle = colors[Math.floor(Date.now() / 70) % colors.length];
+    ctx.beginPath();
+    ctx.arc(drawX + 13, drawY + 13, 12, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#000';
+    ctx.fillRect(drawX + 9, drawY + 9, 2, 5);
+    ctx.fillRect(drawX + 15, drawY + 9, 2, 5);
+  }
+}
+
+// 砲彈刺客 / 幽靈飛行怪 (Bullet Bill / Boo Ghost)
+class BulletBill {
+  constructor(x, y, isGhost = false) {
+    this.x = x;
+    this.y = y;
+    this.baseY = y;
+    this.width = 30;
+    this.height = 24;
+    this.vx = isGhost ? -115 : -190;
+    this.vy = 0;
+    this.isGhost = isGhost;
+    this.isDead = false;
+    this.deadTimer = 0;
+    this.waveTime = Math.random() * Math.PI * 2;
+  }
+
+  update(dt) {
+    if (this.isDead) {
+      this.deadTimer += dt;
+      this.y += 240 * dt;
+      return;
+    }
+    this.x += this.vx * dt;
+    if (this.isGhost) {
+      this.waveTime += dt * 4;
+      this.y = this.baseY + Math.sin(this.waveTime) * 26;
+    }
+  }
+
+  draw(ctx, cameraX) {
+    const drawX = Math.floor(this.x - cameraX);
+    const drawY = Math.floor(this.y);
+    if (this.isGhost) {
+      ctx.fillStyle = this.isDead ? '#888' : '#f8f9fa';
+      ctx.beginPath();
+      ctx.arc(drawX + 14, drawY + 12, 13, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#000';
+      ctx.fillRect(drawX + 5, drawY + 8, 3, 4);
+      ctx.fillRect(drawX + 12, drawY + 8, 3, 4);
+      ctx.fillStyle = '#e52521';
+      ctx.fillRect(drawX + 7, drawY + 14, 7, 5);
+    } else {
+      ctx.fillStyle = '#1f242d';
+      ctx.fillRect(drawX + 6, drawY, 22, 22);
+      ctx.beginPath();
+      ctx.arc(drawX + 8, drawY + 11, 11, Math.PI * 0.5, Math.PI * 1.5);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(drawX + 8, drawY + 5, 5, 5);
+      ctx.fillRect(drawX + 16, drawY + 9, 8, 6);
+      ctx.fillStyle = '#e52521';
+      ctx.fillRect(drawX + 27, drawY + 6, 4, 10);
+    }
+  }
+}
+
+// 8 大世界關卡視覺與物理主題設定
+const MARIO_STAGE_THEMES = {
+  '1-1': {
+    name: '陽光蘑菇草原',
+    sky: '#5c94fc',
+    groundTop: '#00a800',
+    groundBody: '#c84c0c',
+    brick: '#b84400',
+    hill: '#00a800',
+    cloud: '#ffffff',
+    frictionMul: 1.0
+  },
+  '1-2': {
+    name: '幽暗地下迷宮',
+    sky: '#090d1e',
+    groundTop: '#0088ff',
+    groundBody: '#004099',
+    brick: '#1d4ed8',
+    hill: '#111c38',
+    cloud: '#1e293b',
+    hasCeiling: true,
+    frictionMul: 1.0
+  },
+  '1-3': {
+    name: '高空雲端浮島',
+    sky: '#3868f0',
+    groundTop: '#ffffff',
+    groundBody: '#d97706',
+    brick: '#f59e0b',
+    hill: '#60a5fa',
+    cloud: '#ffffff',
+    frictionMul: 1.0
+  },
+  '1-4': {
+    name: '庫巴熔岩城堡',
+    sky: '#180608',
+    groundTop: '#9ca3af',
+    groundBody: '#4b5563',
+    brick: '#6b7280',
+    hill: '#3f1111',
+    cloud: '#450a0a',
+    hasLava: true,
+    frictionMul: 1.0
+  },
+  '2-1': {
+    name: '烈日金字塔沙漠',
+    sky: '#f59e0b',
+    groundTop: '#fde047',
+    groundBody: '#d97706',
+    brick: '#b45309',
+    hill: '#eab308',
+    cloud: '#fef3c7',
+    frictionMul: 0.9
+  },
+  '2-2': {
+    name: '極凍冰封雪原',
+    sky: '#0f2942',
+    groundTop: '#67e8f9',
+    groundBody: '#0284c7',
+    brick: '#38bdf8',
+    hill: '#1e3a8a',
+    cloud: '#e0f2fe',
+    frictionMul: 0.42
+  },
+  '2-3': {
+    name: '暗夜幽靈鬼屋',
+    sky: '#140a28',
+    groundTop: '#a855f7',
+    groundBody: '#3b0764',
+    brick: '#6b21a8',
+    hill: '#2e1065',
+    cloud: '#4c1d95',
+    isHaunted: true,
+    frictionMul: 1.0
+  },
+  '2-4': {
+    name: '星際霓虹彩虹道',
+    sky: '#050514',
+    groundTop: '#00ff88',
+    groundBody: '#6d28d9',
+    brick: '#ec4899',
+    hill: '#1e1b4b',
+    cloud: '#312e81',
+    isRainbow: true,
+    frictionMul: 1.0
+  }
+};
+
 // 彈跳火球 (Fireball)
 class Fireball {
   constructor(x, y, dir) {
@@ -857,7 +1050,7 @@ class Fireball {
     this.life -= dt;
 
     tiles.forEach(tile => {
-      if (tile.type === 'EMPTY') return;
+      if (tile.type === 'EMPTY' || tile.type === 'LAVA') return;
       if (
         this.x - this.radius < tile.x + tile.w &&
         this.x + this.radius > tile.x &&
@@ -1058,6 +1251,53 @@ class SuperMarioGame {
     return s;
   }
 
+  getStageKey() {
+    const w = ((this.world - 1) % 2) + 1;
+    const s = ((this.stage - 1) % 4) + 1;
+    return `${w}-${s}`;
+  }
+
+  getStageTheme() {
+    return MARIO_STAGE_THEMES[this.getStageKey()] || MARIO_STAGE_THEMES['1-1'];
+  }
+
+  selectStage(world, stage, autoStart = true) {
+    this.world = world;
+    this.stage = stage;
+    this.distance = 0;
+    this.mario.x = 100;
+    this.mario.y = 180;
+    this.mario.vx = 0;
+    this.mario.vy = 0;
+    this.mario.invulnerableTimer = 1.0;
+    this.nextGoalX = 420 * 10; // 每 420m 過關旗杆，節奏更緊湊豐富
+
+    this.initWorld();
+    this.updateHUD();
+
+    const theme = this.getStageTheme();
+    if (this.actionHint) {
+      this.actionHint.textContent = `🌍 WORLD ${this.world}-${this.stage}：${theme.name}`;
+      this.actionHint.classList.remove('hidden');
+      setTimeout(() => {
+        if (this.state === 'PLAYING' && this.actionHint) {
+          this.actionHint.classList.add('hidden');
+        }
+      }, 2000);
+    }
+
+    // 同步選關按鈕高亮
+    document.querySelectorAll('[data-mario-stage]').forEach(btn => {
+      btn.classList.toggle('active-stage', btn.dataset.marioStage === `${this.world}-${this.stage}`);
+    });
+
+    if (autoStart) {
+      if (this.pauseScreen) this.pauseScreen.classList.add('hidden');
+      if (this.gameOverScreen) this.gameOverScreen.classList.add('hidden');
+      this.startGame(this.isDemoMode);
+    }
+  }
+
   initWorld() {
     this.tiles = [];
     this.enemies = [];
@@ -1078,10 +1318,18 @@ class SuperMarioGame {
     const startX = this.nextChunkX;
     const chunkWidth = 20 * TILE_SIZE;
     const groundY = this.baseH - TILE_SIZE * 2;
+    const theme = this.getStageTheme();
+    const stageKey = this.getStageKey();
+
+    // 地下迷宮 (1-2) 頂部天花板磚塊
+    if (theme.hasCeiling) {
+      for (let x = startX; x < startX + chunkWidth; x += TILE_SIZE) {
+        this.tiles.push({ x, y: 0, w: TILE_SIZE, h: 18, type: 'CEILING' });
+      }
+    }
 
     // 檢查是否達到終點旗杆檢查站
     if (startX >= this.nextGoalX && startX < this.nextGoalX + chunkWidth) {
-      // 鋪設平地與旗杆、城堡
       for (let x = startX; x < startX + chunkWidth; x += TILE_SIZE) {
         this.tiles.push({ x, y: groundY, w: TILE_SIZE, h: TILE_SIZE * 2, type: 'GROUND' });
       }
@@ -1097,7 +1345,6 @@ class SuperMarioGame {
         isTriggered: false
       });
 
-      // 城堡
       this.tiles.push({
         x: poleX + 160,
         y: groundY - 100,
@@ -1106,28 +1353,89 @@ class SuperMarioGame {
         type: 'CASTLE'
       });
 
-      this.nextGoalX += 500 * 10;
+      this.nextGoalX += 420 * 10;
       this.nextChunkX += chunkWidth;
       return;
     }
 
-    const pattern = this.nextChunkX === 0 ? 0 : Math.floor(Math.random() * 5);
+    // 根據關卡決定地形樣式 (0 ~ 6)
+    let pattern = 0;
+    if (this.nextChunkX > 0) {
+      const pool = {
+        '1-1': [1, 2, 3, 4, 2],
+        '1-2': [2, 4, 5, 2, 3],
+        '1-3': [1, 5, 6, 2, 5],
+        '1-4': [1, 4, 6, 3, 1],
+        '2-1': [3, 4, 2, 6, 4],
+        '2-2': [1, 2, 5, 3, 6],
+        '2-3': [1, 5, 6, 2, 1],
+        '2-4': [5, 6, 2, 1, 5]
+      }[stageKey] || [1, 2, 3, 4, 5, 6];
+      pattern = pool[Math.floor(Math.random() * pool.length)];
+    }
 
     if (pattern === 1) {
-      // 懸崖深淵
+      // 懸崖深淵 或 熔岩火海 + 彈跳床輔助
       for (let x = startX; x < startX + chunkWidth; x += TILE_SIZE) {
-        if (x < startX + TILE_SIZE * 5 || x > startX + TILE_SIZE * 11) {
+        if (x < startX + TILE_SIZE * 5 || x > startX + TILE_SIZE * 10) {
           this.tiles.push({ x, y: groundY, w: TILE_SIZE, h: TILE_SIZE * 2, type: 'GROUND' });
+        } else if (theme.hasLava) {
+          this.tiles.push({ x, y: groundY + 18, w: TILE_SIZE, h: TILE_SIZE * 2, type: 'LAVA' });
         }
       }
+      // 起跳端放置紅色彈簧床
+      this.tiles.push({
+        x: startX + TILE_SIZE * 4,
+        y: groundY - 16,
+        w: 28,
+        h: 16,
+        type: 'SPRING'
+      });
+    } else if (pattern === 5) {
+      // 雲端移動浮台跨海峽
+      for (let x = startX; x < startX + chunkWidth; x += TILE_SIZE) {
+        if (x < startX + TILE_SIZE * 4 || x > startX + TILE_SIZE * 12) {
+          this.tiles.push({ x, y: groundY, w: TILE_SIZE, h: TILE_SIZE * 2, type: 'GROUND' });
+        } else if (theme.hasLava) {
+          this.tiles.push({ x, y: groundY + 18, w: TILE_SIZE, h: TILE_SIZE * 2, type: 'LAVA' });
+        }
+      }
+      // 設置安全橋樑與移動浮台
+      this.tiles.push({
+        x: startX + TILE_SIZE * 6,
+        y: groundY - TILE_SIZE * 1.5,
+        w: TILE_SIZE * 3,
+        h: 16,
+        type: 'MOVING_PLATFORM',
+        baseX: startX + TILE_SIZE * 6,
+        baseY: groundY - TILE_SIZE * 1.5,
+        rangeX: 48,
+        speed: 2.2,
+        phase: Math.random() * Math.PI * 2
+      });
+      this.tiles.push({
+        x: startX + TILE_SIZE * 10,
+        y: groundY - TILE_SIZE * 2.5,
+        w: TILE_SIZE * 2,
+        h: 16,
+        type: 'BRICK'
+      });
+      this.tiles.push({
+        x: startX + TILE_SIZE * 8,
+        y: groundY - TILE_SIZE * 4,
+        w: TILE_SIZE,
+        h: TILE_SIZE,
+        type: 'QUESTION',
+        itemType: 'STAR'
+      });
     } else {
-      // 平地
+      // 平地基礎
       for (let x = startX; x < startX + chunkWidth; x += TILE_SIZE) {
         this.tiles.push({ x, y: groundY, w: TILE_SIZE, h: TILE_SIZE * 2, type: 'GROUND' });
       }
 
       if (pattern === 2) {
-        // 空中問號磚與普通磚塊
+        // 空中問號磚與無敵星/強化道具磚塊
         const by = groundY - TILE_SIZE * 3.5;
         this.tiles.push({ x: startX + TILE_SIZE * 4, y: by, w: TILE_SIZE, h: TILE_SIZE, type: 'BRICK' });
         this.tiles.push({
@@ -1136,7 +1444,7 @@ class SuperMarioGame {
           w: TILE_SIZE,
           h: TILE_SIZE,
           type: 'QUESTION',
-          itemType: Math.random() > 0.4 ? 'POWERUP' : 'COIN'
+          itemType: Math.random() > 0.35 ? 'POWERUP' : 'STAR'
         });
         this.tiles.push({ x: startX + TILE_SIZE * 6, y: by, w: TILE_SIZE, h: TILE_SIZE, type: 'BRICK' });
         this.tiles.push({
@@ -1150,8 +1458,11 @@ class SuperMarioGame {
         this.tiles.push({ x: startX + TILE_SIZE * 8, y: by, w: TILE_SIZE, h: TILE_SIZE, type: 'BRICK' });
 
         this.enemies.push(new Goomba(startX + TILE_SIZE * 6, groundY - 28));
+        if (theme.isHaunted || theme.hasLava) {
+          this.enemies.push(new BulletBill(startX + TILE_SIZE * 15, groundY - 58, !!theme.isHaunted));
+        }
       } else if (pattern === 3) {
-        // 水管障礙 (部分帶食人花)
+        // 水管障礙 (帶食人花)
         const pipeH = 3 * TILE_SIZE;
         const pipeX = startX + TILE_SIZE * 8;
         const pipeY = groundY - pipeH;
@@ -1164,7 +1475,6 @@ class SuperMarioGame {
           type: 'PIPE'
         });
 
-        // 生成食人花
         this.piranhas.push(new PiranhaPlant(pipeX, pipeY, TILE_SIZE * 2));
         this.enemies.push(new Koopa(startX + TILE_SIZE * 13, groundY - 36));
       } else if (pattern === 4) {
@@ -1179,6 +1489,28 @@ class SuperMarioGame {
           });
         }
         this.enemies.push(new Goomba(startX + TILE_SIZE * 11, groundY - 28));
+      } else if (pattern === 6) {
+        // 彈簧高台 + 雙層空中走廊 + 飛行砲彈/幽靈
+        this.tiles.push({
+          x: startX + TILE_SIZE * 3,
+          y: groundY - 16,
+          w: 28,
+          h: 16,
+          type: 'SPRING'
+        });
+        const highY = groundY - TILE_SIZE * 4.5;
+        for (let k = 5; k <= 10; k++) {
+          this.tiles.push({
+            x: startX + TILE_SIZE * k,
+            y: highY,
+            w: TILE_SIZE,
+            h: TILE_SIZE,
+            type: k % 2 === 0 ? 'QUESTION' : 'BRICK',
+            itemType: k === 8 ? 'STAR' : 'COIN'
+          });
+        }
+        this.enemies.push(new BulletBill(startX + TILE_SIZE * 14, groundY - 48, !!theme.isHaunted));
+        this.enemies.push(new Koopa(startX + TILE_SIZE * 11, groundY - 36));
       } else {
         if (this.nextChunkX > 0) {
           this.enemies.push(new Goomba(startX + TILE_SIZE * 9, groundY - 28));
@@ -1245,6 +1577,24 @@ class SuperMarioGame {
 
     const demoHudBtn = document.getElementById('mario-demo-btn');
     if (demoHudBtn) demoHudBtn.addEventListener('click', () => this.toggleDemoMode());
+
+    // 綁定 8 大關卡快速選擇器按鈕
+    document.querySelectorAll('[data-mario-stage]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const [w, s] = btn.dataset.marioStage.split('-').map(Number);
+        const startNow = this.state === 'PLAYING';
+        this.selectStage(w, s, startNow);
+      });
+    });
+
+    const stageSelectHud = document.getElementById('mario-stage-select');
+    if (stageSelectHud) {
+      stageSelectHud.addEventListener('change', (e) => {
+        const [w, s] = e.target.value.split('-').map(Number);
+        this.selectStage(w, s, true);
+        e.target.blur();
+      });
+    }
 
     const restartBtn = document.getElementById('restart-btn');
     if (restartBtn) restartBtn.addEventListener('click', () => this.restartGame());
@@ -1416,8 +1766,6 @@ class SuperMarioGame {
     this.score = 0;
     this.coins = 0;
     this.lives = 3;
-    this.world = 1;
-    this.stage = 1;
     this.distance = 0;
     this.mario.x = 100;
     this.mario.y = 200;
@@ -1425,7 +1773,7 @@ class SuperMarioGame {
     this.mario.vy = 0;
     this.mario.form = 'SMALL';
     this.mario.height = 32;
-    this.nextGoalX = 500 * 10;
+    this.nextGoalX = 420 * 10;
 
     this.initWorld();
     this.updateHUD();
@@ -1440,29 +1788,25 @@ class SuperMarioGame {
   }
 
   // ==========================================
-  // AI Demo Mode 智慧決策核心
+  // AI Demo Mode 智慧決策核心 (支援 8 大關卡機關)
   // ==========================================
   updateAIDemo(dt) {
     const m = this.mario;
-    const groundY = this.baseH - TILE_SIZE * 2;
 
     if (this.aiState.fireCooldown > 0) {
       this.aiState.fireCooldown -= dt;
     }
 
-    // 預設向右衝刺前進
     this.input.left = false;
     this.input.right = true;
     this.input.down = false;
     this.input.sprint = true;
     this.aiState.actionLabel = 'SPRINTING FORWARD';
 
-    // 處理長按跳躍計時器 (確保跳得夠高)
     if (this.aiState.jumpHoldTimer > 0) {
       this.aiState.jumpHoldTimer -= dt;
       this.input.jump = true;
       if (m.isGrounded && this.aiState.jumpHoldTimer < 0.36) {
-        // 已落地，重置跳躍鍵以便下次起跳
         this.input.jump = false;
         this.aiState.jumpHoldTimer = 0;
       }
@@ -1480,48 +1824,47 @@ class SuperMarioGame {
       }
     };
 
-    // 1. 偵測前方道具 (Mushroom / FireFlower) 並優先拾取
+    // 1. 偵測前方道具 (Mushroom / FireFlower / StarItem) 並優先拾取
     const nearbyItem = this.items.find(it => it.x > m.x - 40 && it.x < m.x + 180 && it.y < this.baseH);
     if (nearbyItem) {
-      this.aiState.actionLabel = 'CHASING POWERUP 🍄';
+      this.aiState.actionLabel = 'CHASING POWERUP ⭐';
       if (nearbyItem.x < m.x - 8) {
         this.input.left = true;
         this.input.right = false;
       }
       if (nearbyItem.y + nearbyItem.height < m.y + 8 && Math.abs(nearbyItem.x - m.x) < 45) {
-        triggerHighJump('JUMP FOR POWERUP 🍄', 0.38);
+        triggerHighJump('JUMP FOR POWERUP ⭐', 0.38);
       }
     }
 
-    // 2. 偵測前方深淵斷崖 (Abyss Gap)
+    // 2. 偵測前方深淵斷崖或熔岩池 (Abyss / Lava Gap)
     const probeNearX = m.x + m.width + 18;
     const probeMidX = m.x + m.width + 44;
+    const isSafeFloor = (t) => t.type === 'GROUND' || t.type === 'MOVING_PLATFORM' || t.type === 'BRICK';
     const hasGroundNear = this.tiles.some(
-      t => t.type === 'GROUND' && probeNearX >= t.x && probeNearX <= t.x + t.w
+      t => isSafeFloor(t) && probeNearX >= t.x && probeNearX <= t.x + t.w
     );
     const hasGroundMid = this.tiles.some(
-      t => t.type === 'GROUND' && probeMidX >= t.x && probeMidX <= t.x + t.w
+      t => isSafeFloor(t) && probeMidX >= t.x && probeMidX <= t.x + t.w
     );
 
     if (!hasGroundNear || !hasGroundMid) {
       this.input.right = true;
       this.input.left = false;
       this.input.sprint = true;
-      triggerHighJump('LEAPING ABYSS 🕳️', 0.5);
+      triggerHighJump('LEAPING CHASM 🕳️', 0.5);
     }
 
     // 3. 偵測前方水管與食人花 (Pipe & Piranha Plant)
     const dangerPiranha = this.piranhas.find(
       p => !p.isDead && p.pipeX + 64 > m.x && p.pipeX - (m.x + m.width) < 110
     );
-    if (dangerPiranha) {
+    if (dangerPiranha && !m.isStar) {
       const distToPipe = dangerPiranha.pipeX - (m.x + m.width);
-      // 火焰形態直接發射火球消滅食人花
       if (m.form === 'FIRE' && this.aiState.fireCooldown <= 0) {
         this.shootFireball();
         this.aiState.fireCooldown = 0.28;
       }
-      // 若食人花正在鑽出或咬合，且馬力歐在地面水管前，短暫駐足等待食人花縮回
       if (
         (dangerPiranha.state === 'RISING' || dangerPiranha.state === 'BITING' || dangerPiranha.offsetY > 8) &&
         m.isGrounded &&
@@ -1538,7 +1881,7 @@ class SuperMarioGame {
       }
     }
 
-    // 4. 偵測前方水管或階梯磚塊阻擋 (Solid Obstacle Ahead)
+    // 4. 偵測前方水管或階梯磚塊阻擋
     const obstacleAhead = this.tiles.find(t => {
       if (t.type !== 'PIPE' && t.type !== 'BRICK') return false;
       const dx = t.x - (m.x + m.width);
@@ -1550,22 +1893,22 @@ class SuperMarioGame {
       triggerHighJump('VAULTING OBSTACLE 🧱', 0.46);
     }
 
-    // 5. 偵測前方怪物 (Goomba / Koopa)
+    // 5. 偵測前方怪物 (Goomba / Koopa / BulletBill / BooGhost)
     const threatEnemy = this.enemies.find(e => {
       if (e.isDead) return false;
       const dx = e.x - (m.x + m.width);
-      return dx > -20 && dx < 125;
+      return dx > -20 && dx < 135;
     });
 
-    if (threatEnemy) {
+    if (threatEnemy && !m.isStar) {
       const dx = threatEnemy.x - (m.x + m.width);
       if (m.form === 'FIRE' && this.aiState.fireCooldown <= 0 && dx < 220) {
         this.shootFireball();
         this.aiState.fireCooldown = 0.25;
         this.aiState.actionLabel = 'FIREBALL ATTACK 🔥';
       }
-      if (dx < 76) {
-        triggerHighJump('STOMPING ENEMY 👟', 0.42);
+      if (dx < 82) {
+        triggerHighJump('STOMPING ENEMY 👟', 0.43);
       }
     }
 
@@ -1618,6 +1961,7 @@ class SuperMarioGame {
 
   update(dt) {
     const m = this.mario;
+    const theme = this.getStageTheme();
 
     // 1. 無敵與星星計時
     if (m.invulnerableTimer > 0) m.invulnerableTimer -= dt;
@@ -1626,8 +1970,19 @@ class SuperMarioGame {
       if (m.starTimer <= 0) m.isStar = false;
     }
 
-    // 2. 移動速度與 Shift 衝刺
+    // 更新移動浮台位置
+    this.tiles.forEach(t => {
+      if (t.type === 'MOVING_PLATFORM') {
+        t.phase += dt * t.speed;
+        const nextX = t.baseX + Math.sin(t.phase) * t.rangeX;
+        t.dx = nextX - t.x;
+        t.x = nextX;
+      }
+    });
+
+    // 2. 移動速度與冰面摩擦係數
     const maxSpeed = this.input.sprint ? SPRINT_MAX_SPEED : NORMAL_MAX_SPEED;
+    const effFriction = FRICTION * (theme.frictionMul || 1.0);
     if (this.input.left) {
       m.vx -= ACCEL * dt;
       m.facing = -1;
@@ -1635,12 +1990,11 @@ class SuperMarioGame {
       m.vx += ACCEL * dt;
       m.facing = 1;
     } else {
-      if (m.vx > 0) m.vx = Math.max(0, m.vx - FRICTION * dt);
-      else if (m.vx < 0) m.vx = Math.min(0, m.vx + FRICTION * dt);
+      if (m.vx > 0) m.vx = Math.max(0, m.vx - effFriction * dt);
+      else if (m.vx < 0) m.vx = Math.min(0, m.vx + effFriction * dt);
     }
     m.vx = Math.max(-maxSpeed, Math.min(maxSpeed, m.vx));
 
-    // 煞車煙塵與奔跑塵土
     if (m.isGrounded && Math.abs(m.vx) > 200) {
       if (Math.random() < 0.25) {
         this.particles.push(new DustParticle(m.x + 8, m.y + m.height - 2));
@@ -1691,7 +2045,6 @@ class SuperMarioGame {
       // 檢查過關旗杆
       if (tile.type === 'FLAGPOLE' && !tile.isTriggered) {
         if (m.x + m.width >= tile.x && m.x <= tile.x + tile.w) {
-          // 觸發過關！
           this.triggerStageClear(tile);
           return;
         }
@@ -1705,22 +2058,43 @@ class SuperMarioGame {
         m.y < tile.y + tile.h &&
         m.y + m.height > tile.y
       ) {
+        if (tile.type === 'LAVA') {
+          this.hurtMario();
+          m.vy = -520;
+          continue;
+        }
+
+        if (tile.type === 'SPRING') {
+          m.y = tile.y - m.height;
+          m.vy = -860;
+          m.isGrounded = false;
+          this.audio.playJump();
+          this.floatTexts.push(new FloatingText('BOING!', tile.x, tile.y - 10, '#00ff88'));
+          continue;
+        }
+
         const prevY = m.y - m.vy * dt;
 
-        // 踩在磚塊上
-        if (prevY + m.height <= tile.y + 8 && m.vy >= 0) {
+        // 踩在磚塊或浮台上
+        if (prevY + m.height <= tile.y + 10 && m.vy >= 0) {
           m.y = tile.y - m.height;
           m.vy = 0;
           m.isGrounded = true;
+          if (tile.type === 'MOVING_PLATFORM' && tile.dx) {
+            m.x += tile.dx;
+          }
         }
         // 從下方頂擊磚塊
-        else if (prevY >= tile.y + tile.h - 8 && m.vy < 0) {
+        else if (prevY >= tile.y + tile.h - 10 && m.vy < 0) {
           m.y = tile.y + tile.h;
           m.vy = 40;
 
           if (tile.type === 'QUESTION') {
             tile.type = 'EMPTY';
-            if (tile.itemType === 'POWERUP') {
+            if (tile.itemType === 'STAR') {
+              this.items.push(new StarItem(tile.x, tile.y - 28));
+              this.audio.playPowerup();
+            } else if (tile.itemType === 'POWERUP') {
               if (m.form === 'SMALL') {
                 this.items.push(new Mushroom(tile.x, tile.y - 28));
               } else {
@@ -1743,8 +2117,7 @@ class SuperMarioGame {
               this.audio.playBump();
             }
           }
-        } else {
-          // 側面阻擋
+        } else if (tile.type !== 'MOVING_PLATFORM') {
           if (m.vx > 0) m.x = tile.x - m.width;
           else if (m.vx < 0) m.x = tile.x + tile.w;
           m.vx = 0;
@@ -1779,7 +2152,11 @@ class SuperMarioGame {
         m.y < item.y + item.height &&
         m.y + m.height > item.y
       ) {
-        if (item instanceof Mushroom) {
+        if (item instanceof StarItem) {
+          m.isStar = true;
+          m.starTimer = 8.0;
+          this.floatTexts.push(new FloatingText('STAR INVINCIBLE! ⭐', m.x, m.y - 14, '#fcd116'));
+        } else if (item instanceof Mushroom) {
           m.form = 'SUPER';
           m.height = 48;
           m.y -= 16;
@@ -1807,7 +2184,14 @@ class SuperMarioGame {
           m.y < p.y + p.height &&
           m.y + m.height > p.y
         ) {
-          this.hurtMario();
+          if (m.isStar) {
+            p.isDead = true;
+            this.score += 400;
+            this.floatTexts.push(new FloatingText('+400 STAR!', p.x, p.y - 10, '#fcd116'));
+            this.audio.playStomp();
+          } else {
+            this.hurtMario();
+          }
         }
       }
     }
@@ -1822,7 +2206,6 @@ class SuperMarioGame {
         continue;
       }
 
-      // 檢查是否命中敵人
       let hit = false;
       this.enemies.forEach(e => {
         if (!e.isDead && Math.hypot(fb.x - (e.x + e.width / 2), fb.y - (e.y + e.height / 2)) < 22) {
@@ -1853,7 +2236,7 @@ class SuperMarioGame {
       const e = this.enemies[i];
       e.update(dt, this.tiles);
 
-      if (e.isDead && e.deadTimer > 0.4) {
+      if ((e.isDead && e.deadTimer > 0.4) || e.x < this.cameraX - 150) {
         this.enemies.splice(i, 1);
         continue;
       }
@@ -1865,9 +2248,16 @@ class SuperMarioGame {
         m.y < e.y + e.height &&
         m.y + m.height > e.y
       ) {
+        if (m.isStar) {
+          e.isDead = true;
+          this.audio.playStomp();
+          this.score += 300;
+          this.floatTexts.push(new FloatingText('+300 STAR!', e.x, e.y - 10, '#fcd116'));
+          continue;
+        }
         // 踩怪 (Stomp)
-        if (m.vy > 0 && m.y + m.height - m.vy * dt <= e.y + 12) {
-          if (e instanceof Goomba) {
+        if (m.vy > 0 && m.y + m.height - m.vy * dt <= e.y + 14) {
+          if (e instanceof Goomba || e instanceof BulletBill) {
             e.isDead = true;
             this.audio.playStomp();
           } else if (e instanceof Koopa) {
@@ -1912,7 +2302,7 @@ class SuperMarioGame {
 
   hurtMario() {
     const m = this.mario;
-    if (m.invulnerableTimer > 0) return;
+    if (m.invulnerableTimer > 0 || m.isStar) return;
 
     if (m.form !== 'SMALL') {
       m.form = 'SMALL';
@@ -1941,10 +2331,10 @@ class SuperMarioGame {
     this.mario.vy = 0;
     this.mario.x = flagTile.x - 10;
 
-    this.actionHint.textContent = `★ STAGE CLEAR! WORLD ${this.world}-${this.stage} ★`;
+    const theme = this.getStageTheme();
+    this.actionHint.textContent = `★ STAGE CLEAR! ${this.world}-${this.stage} ${theme.name} ★`;
     this.actionHint.classList.remove('hidden');
 
-    // 旗杆滑降動畫
     const slideDuration = 900;
     const startY = this.mario.y;
     const targetY = flagTile.y + flagTile.h - this.mario.height;
@@ -1959,7 +2349,6 @@ class SuperMarioGame {
       if (p < 1) {
         requestAnimationFrame(slideAnim);
       } else {
-        // 到達地面，播放過關號角
         this.audio.playStageClear();
         this.score += 5000;
         this.floatTexts.push(new FloatingText('+5000 BONUS!', this.mario.x, this.mario.y - 20, '#fcd116'));
@@ -1970,11 +2359,24 @@ class SuperMarioGame {
             this.world++;
             this.stage = 1;
           }
-          this.actionHint.classList.add('hidden');
+          const nextTheme = this.getStageTheme();
+          this.mario.x = 100;
+          this.mario.y = 180;
+          this.mario.vx = 180;
+          this.mario.vy = 0;
+          this.nextGoalX = 420 * 10;
+          this.initWorld();
+
+          this.actionHint.textContent = `🌍 ENTERING WORLD ${this.world}-${this.stage}：${nextTheme.name}`;
+          setTimeout(() => {
+            if (this.actionHint && this.state === 'PLAYING') {
+              this.actionHint.classList.add('hidden');
+            }
+          }, 1800);
+
           this.audio.startBgm();
           this.state = 'PLAYING';
-          this.mario.vx = 180;
-        }, 2200);
+        }, 2000);
       }
     };
     slideAnim();
@@ -1986,33 +2388,55 @@ class SuperMarioGame {
   }
 
   updateHUD() {
+    const theme = this.getStageTheme();
     this.scoreDisplay.textContent = this.padScore(Math.floor(this.score));
     this.coinsDisplay.textContent = this.coins < 10 ? '0' + this.coins : this.coins;
-    this.worldDisplay.textContent = `${this.world} - ${this.stage}`;
+    this.worldDisplay.textContent = `${this.world}-${this.stage} ${theme.name}`;
     this.distanceDisplay.textContent = `${this.distance}m`;
     this.livesDisplay.textContent = `♥ × ${this.lives}`;
 
-    // 更新形態標籤
-    this.powerBadge.textContent = this.mario.form;
-    this.powerBadge.className = `hud-badge ${this.mario.form.toLowerCase()}`;
+    const stageSelectHud = document.getElementById('mario-stage-select');
+    if (stageSelectHud) {
+      stageSelectHud.value = this.getStageKey();
+    }
+
+    const badgeForm = this.mario.isStar ? 'STAR' : this.mario.form;
+    this.powerBadge.textContent = badgeForm;
+    this.powerBadge.className = `hud-badge ${badgeForm.toLowerCase()}`;
   }
 
   render() {
     const ctx = this.ctx;
+    const theme = this.getStageTheme();
     ctx.clearRect(0, 0, this.baseW, this.baseH);
 
-    // 1. 經典藍天
-    ctx.fillStyle = '#5c94fc';
+    // 1. 關卡主題天空背景
+    ctx.fillStyle = theme.sky;
     ctx.fillRect(0, 0, this.baseW, this.baseH);
 
-    // 2. 背景白雲與遠山
-    ctx.fillStyle = '#ffffff';
+    // 星際彩虹關或幽靈鬼屋特殊天體背景
+    if (theme.isRainbow) {
+      ctx.fillStyle = '#ffffff';
+      for (let s = 0; s < 28; s++) {
+        const sx = ((s * 73 - this.cameraX * 0.1) % this.baseW + this.baseW) % this.baseW;
+        const sy = (s * 41) % (this.baseH - 80);
+        ctx.fillRect(sx, sy, s % 3 === 0 ? 3 : 2, s % 3 === 0 ? 3 : 2);
+      }
+    } else if (theme.isHaunted) {
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.arc(this.baseW - 90, 65, 28, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // 2. 背景雲朵與遠山
+    ctx.fillStyle = theme.cloud;
     for (let i = 0; i < 5; i++) {
       const cx = ((i * 180 - this.cameraX * 0.2) % (this.baseW + 200)) - 50;
       ctx.fillRect(cx, 35 + (i % 2) * 30, 52, 16);
       ctx.fillRect(cx + 14, 25 + (i % 2) * 30, 24, 12);
     }
-    ctx.fillStyle = '#00a800';
+    ctx.fillStyle = theme.hill;
     for (let i = 0; i < 4; i++) {
       const mx = ((i * 240 - this.cameraX * 0.4) % (this.baseW + 200)) - 60;
       ctx.beginPath();
@@ -2020,23 +2444,51 @@ class SuperMarioGame {
       ctx.fill();
     }
 
+    const rainbowColors = ['#ff0055', '#ff8800', '#ffee00', '#00ff88', '#00cfef', '#8b5cf6'];
+
     // 3. 繪製地形與方塊
-    this.tiles.forEach(tile => {
+    this.tiles.forEach((tile, idx) => {
       const dx = Math.floor(tile.x - this.cameraX);
       const dy = Math.floor(tile.y);
 
       if (dx + tile.w < -50 || dx > this.baseW + 50) return;
 
       if (tile.type === 'GROUND') {
-        ctx.fillStyle = '#00a800';
+        ctx.fillStyle = theme.isRainbow
+          ? rainbowColors[Math.floor((tile.x / TILE_SIZE) % rainbowColors.length)]
+          : theme.groundTop;
         ctx.fillRect(dx, dy, tile.w, 8);
-        ctx.fillStyle = '#c84c0c';
+        ctx.fillStyle = theme.groundBody;
         ctx.fillRect(dx, dy + 8, tile.w, tile.h - 8);
-        ctx.fillStyle = '#000000';
+        ctx.fillStyle = 'rgba(0,0,0,0.45)';
         ctx.fillRect(dx + 4, dy + 14, 4, 4);
         ctx.fillRect(dx + 20, dy + 22, 4, 4);
+      } else if (tile.type === 'CEILING') {
+        ctx.fillStyle = theme.brick;
+        ctx.fillRect(dx, dy, tile.w, tile.h);
+        ctx.strokeStyle = '#000';
+        ctx.strokeRect(dx, dy, tile.w, tile.h);
+      } else if (tile.type === 'LAVA') {
+        ctx.fillStyle = Math.floor(Date.now() / 180 + idx) % 2 === 0 ? '#ff2a00' : '#ff8800';
+        ctx.fillRect(dx, dy, tile.w, tile.h);
+        ctx.fillStyle = '#fde047';
+        ctx.fillRect(dx + 4, dy + 2, tile.w - 8, 5);
+      } else if (tile.type === 'SPRING') {
+        ctx.fillStyle = '#e52521';
+        ctx.fillRect(dx, dy, tile.w, 6);
+        ctx.fillStyle = '#fcd116';
+        ctx.fillRect(dx + 6, dy + 6, tile.w - 12, 6);
+        ctx.fillStyle = '#555';
+        ctx.fillRect(dx + 2, dy + 12, tile.w - 4, 4);
+      } else if (tile.type === 'MOVING_PLATFORM') {
+        ctx.fillStyle = '#fcd116';
+        ctx.fillRect(dx, dy, tile.w, tile.h);
+        ctx.strokeStyle = '#000';
+        ctx.strokeRect(dx + 1, dy + 1, tile.w - 2, tile.h - 2);
+        ctx.fillStyle = '#e52521';
+        ctx.fillRect(dx + 6, dy + 5, tile.w - 12, 6);
       } else if (tile.type === 'BRICK') {
-        ctx.fillStyle = '#b84400';
+        ctx.fillStyle = theme.brick;
         ctx.fillRect(dx, dy, tile.w, tile.h);
         ctx.fillStyle = '#000';
         ctx.strokeRect(dx + 1, dy + 1, tile.w - 2, tile.h - 2);
@@ -2047,13 +2499,11 @@ class SuperMarioGame {
         ctx.fillRect(dx, dy, tile.w, tile.h);
         ctx.fillStyle = '#000';
         ctx.strokeRect(dx + 1, dy + 1, tile.w - 2, tile.h - 2);
-        // 4角鉚釘
         ctx.fillStyle = '#6b3600';
         ctx.fillRect(dx + 3, dy + 3, 2, 2);
         ctx.fillRect(dx + tile.w - 5, dy + 3, 2, 2);
         ctx.fillRect(dx + 3, dy + tile.h - 5, 2, 2);
         ctx.fillRect(dx + tile.w - 5, dy + tile.h - 5, 2, 2);
-        // 問號
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 15px monospace';
         ctx.fillText('?', dx + 11, dy + 22);
@@ -2065,15 +2515,12 @@ class SuperMarioGame {
         ctx.fillStyle = '#5cff5c';
         ctx.fillRect(dx + 4, dy, 6, tile.h);
       } else if (tile.type === 'FLAGPOLE') {
-        // 旗杆
         ctx.fillStyle = '#00a800';
         ctx.fillRect(dx + 4, dy, 4, tile.h);
-        // 頂端金球
         ctx.fillStyle = '#fcd116';
         ctx.beginPath();
         ctx.arc(dx + 6, dy - 2, 7, 0, Math.PI * 2);
         ctx.fill();
-        // 旗幟
         const fY = Math.floor(tile.flagY);
         ctx.fillStyle = '#e52521';
         ctx.beginPath();
@@ -2082,14 +2529,11 @@ class SuperMarioGame {
         ctx.lineTo(dx + 4, fY + 24);
         ctx.fill();
       } else if (tile.type === 'CASTLE') {
-        // 磚石城堡
-        ctx.fillStyle = '#b84400';
+        ctx.fillStyle = theme.brick;
         ctx.fillRect(dx, dy + 20, tile.w, tile.h - 20);
-        // 城垛
         ctx.fillRect(dx, dy, 24, 20);
         ctx.fillRect(dx + 38, dy, 24, 20);
         ctx.fillRect(dx + 76, dy, 24, 20);
-        // 拱門
         ctx.fillStyle = '#000000';
         ctx.beginPath();
         ctx.arc(dx + 50, dy + 65, 18, Math.PI, 0);
