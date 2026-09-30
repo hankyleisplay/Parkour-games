@@ -969,6 +969,18 @@ class SuperMarioGame {
     this.distance = 0;
     this.highScore = parseInt(localStorage.getItem('mario_parkour_highscore') || '0', 10);
     this.state = 'START'; // 'START', 'PLAYING', 'PAUSED', 'GAMEOVER', 'CLEARING'
+    this.isActiveGame = true; // 是否為目前平台啟用的遊戲
+
+    // AI Demo Mode 狀態
+    this.isDemoMode = false;
+    this.aiState = {
+      lastX: 100,
+      stuckTimer: 0,
+      jumpHoldTimer: 0,
+      fireCooldown: 0,
+      actionLabel: 'READY',
+      autoRestartTimer: null
+    };
 
     // 操作狀態
     this.input = { left: false, right: false, jump: false, down: false, sprint: false };
@@ -1023,7 +1035,9 @@ class SuperMarioGame {
     this.finalBestScore = document.getElementById('final-best-score');
     this.newRecordBadge = document.getElementById('new-record-badge');
 
-    this.startHighScore.textContent = this.padScore(this.highScore);
+    if (this.startHighScore) {
+      this.startHighScore.textContent = this.padScore(this.highScore);
+    }
 
     this.resizeCanvas();
     this.bindEvents();
@@ -1179,8 +1193,15 @@ class SuperMarioGame {
     window.addEventListener('resize', this.resizeCanvas.bind(this));
 
     window.addEventListener('keydown', (e) => {
+      if (!this.isActiveGame) return;
+
+      if (e.code === 'KeyM') {
+        this.toggleDemoMode();
+        return;
+      }
+
       if (this.state === 'START' && (e.code === 'Space' || e.code === 'Enter')) {
-        this.startGame();
+        this.startGame(false);
         return;
       }
       if (this.state === 'GAMEOVER' && (e.code === 'Space' || e.code === 'Enter')) {
@@ -1191,6 +1212,9 @@ class SuperMarioGame {
         this.togglePause();
         return;
       }
+
+      // 若在 Demo Mode 下玩家主動按移動鍵，不干擾 AI 除非關閉 Demo Mode
+      if (this.isDemoMode) return;
 
       if (e.code === 'KeyA' || e.code === 'ArrowLeft') this.input.left = true;
       if (e.code === 'KeyD' || e.code === 'ArrowRight') this.input.right = true;
@@ -1205,6 +1229,7 @@ class SuperMarioGame {
     });
 
     window.addEventListener('keyup', (e) => {
+      if (!this.isActiveGame || this.isDemoMode) return;
       if (e.code === 'KeyA' || e.code === 'ArrowLeft') this.input.left = false;
       if (e.code === 'KeyD' || e.code === 'ArrowRight') this.input.right = false;
       if (e.code === 'KeyW' || e.code === 'ArrowUp' || e.code === 'Space') this.input.jump = false;
@@ -1212,42 +1237,109 @@ class SuperMarioGame {
       if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') this.input.sprint = false;
     });
 
-    document.getElementById('start-btn').addEventListener('click', () => this.startGame());
-    document.getElementById('restart-btn').addEventListener('click', () => this.restartGame());
-    document.getElementById('resume-btn').addEventListener('click', () => this.togglePause());
-    document.getElementById('pause-restart-btn').addEventListener('click', () => this.restartGame());
+    const startBtn = document.getElementById('start-btn');
+    if (startBtn) startBtn.addEventListener('click', () => this.startGame(false));
 
-    document.getElementById('sound-btn').addEventListener('click', (e) => {
-      this.audio.init();
-      const unmuted = this.audio.toggleMute();
-      e.target.textContent = unmuted ? '🔊' : '🔇';
-    });
+    const startDemoBtn = document.getElementById('start-demo-btn');
+    if (startDemoBtn) startDemoBtn.addEventListener('click', () => this.startGame(true));
 
-    document.getElementById('fullscreen-btn').addEventListener('click', () => {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(() => {});
-      } else {
-        document.exitFullscreen().catch(() => {});
-      }
-    });
+    const demoHudBtn = document.getElementById('mario-demo-btn');
+    if (demoHudBtn) demoHudBtn.addEventListener('click', () => this.toggleDemoMode());
+
+    const restartBtn = document.getElementById('restart-btn');
+    if (restartBtn) restartBtn.addEventListener('click', () => this.restartGame());
+
+    const resumeBtn = document.getElementById('resume-btn');
+    if (resumeBtn) resumeBtn.addEventListener('click', () => this.togglePause());
+
+    const pauseRestartBtn = document.getElementById('pause-restart-btn');
+    if (pauseRestartBtn) pauseRestartBtn.addEventListener('click', () => this.restartGame());
+
+    const soundBtn = document.getElementById('sound-btn');
+    if (soundBtn) {
+      soundBtn.addEventListener('click', (e) => {
+        this.audio.init();
+        const unmuted = this.audio.toggleMute();
+        e.currentTarget.textContent = unmuted ? '🔊' : '🔇';
+        const globalSoundBtn = document.getElementById('global-sound-btn');
+        if (globalSoundBtn) globalSoundBtn.textContent = unmuted ? '🔊' : '🔇';
+      });
+    }
+
+    const fullscreenBtn = document.getElementById('fullscreen-btn');
+    if (fullscreenBtn) {
+      fullscreenBtn.addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        } else {
+          document.exitFullscreen().catch(() => {});
+        }
+      });
+    }
   }
 
-  startGame() {
+  toggleDemoMode(forceState) {
+    this.isDemoMode = typeof forceState === 'boolean' ? forceState : !this.isDemoMode;
+    this.input = { left: false, right: false, jump: false, down: false, sprint: false };
+    this.aiState.jumpHoldTimer = 0;
+    this.aiState.stuckTimer = 0;
+    this.aiState.actionLabel = this.isDemoMode ? 'AI INITIALIZED' : 'MANUAL';
+
+    if (this.isDemoMode) {
+      if (this.state === 'START') {
+        this.startGame(true);
+      } else if (this.state === 'GAMEOVER') {
+        this.restartGame();
+      } else if (this.state === 'PAUSED') {
+        this.togglePause();
+      }
+    }
+
+    this.syncDemoUI();
+    return this.isDemoMode;
+  }
+
+  syncDemoUI() {
+    const demoHudBtn = document.getElementById('mario-demo-btn');
+    if (demoHudBtn) {
+      demoHudBtn.classList.toggle('active-demo', this.isDemoMode);
+      demoHudBtn.textContent = this.isDemoMode ? '🤖 AI: ON' : '🤖 DEMO';
+    }
+    const globalDemoBtn = document.getElementById('global-demo-btn');
+    if (globalDemoBtn && this.isActiveGame) {
+      globalDemoBtn.classList.toggle('active-demo', this.isDemoMode);
+      globalDemoBtn.innerHTML = this.isDemoMode
+        ? '<span>🤖 AI 自動玩: 開啟中</span>'
+        : '<span>🤖 Demo Mode (AI 代玩)</span>';
+    }
+  }
+
+  startGame(enableDemo = false) {
+    if (typeof enableDemo === 'boolean') {
+      this.isDemoMode = enableDemo;
+    }
     this.audio.init();
     this.audio.startBgm();
     this.state = 'PLAYING';
-    this.startScreen.classList.add('hidden');
-    this.hud.classList.remove('hidden');
+    if (this.startScreen) this.startScreen.classList.add('hidden');
+    if (this.hud) this.hud.classList.remove('hidden');
+    this.syncDemoUI();
+  }
+
+  pauseForSwitch() {
+    if (this.state === 'PLAYING') {
+      this.audio.stopBgm();
+    }
   }
 
   togglePause() {
     if (this.state === 'PLAYING') {
       this.state = 'PAUSED';
-      this.pauseScreen.classList.remove('hidden');
+      if (this.pauseScreen) this.pauseScreen.classList.remove('hidden');
       this.audio.stopBgm();
     } else if (this.state === 'PAUSED') {
       this.state = 'PLAYING';
-      this.pauseScreen.classList.add('hidden');
+      if (this.pauseScreen) this.pauseScreen.classList.add('hidden');
       this.audio.startBgm();
     }
   }
@@ -1272,16 +1364,21 @@ class SuperMarioGame {
     if (isNewRecord) {
       this.highScore = Math.floor(this.score);
       localStorage.setItem('mario_parkour_highscore', this.highScore.toString());
-      this.newRecordBadge.classList.remove('hidden');
+      if (this.newRecordBadge) this.newRecordBadge.classList.remove('hidden');
     } else {
-      this.newRecordBadge.classList.add('hidden');
+      if (this.newRecordBadge) this.newRecordBadge.classList.add('hidden');
     }
 
-    this.finalScore.textContent = this.padScore(Math.floor(this.score));
-    this.finalDistance.textContent = `${Math.floor(this.distance)} m`;
-    this.finalCoins.textContent = this.coins.toString();
-    this.finalWorld.textContent = `${this.world} - ${this.stage}`;
-    this.finalBestScore.textContent = this.padScore(this.highScore);
+    if (this.finalScore) this.finalScore.textContent = this.padScore(Math.floor(this.score));
+    if (this.finalDistance) this.finalDistance.textContent = `${Math.floor(this.distance)} m`;
+    if (this.finalCoins) this.finalCoins.textContent = this.coins.toString();
+    if (this.finalWorld) this.finalWorld.textContent = `${this.world} - ${this.stage}`;
+    if (this.finalBestScore) this.finalBestScore.textContent = this.padScore(this.highScore);
+    if (this.startHighScore) this.startHighScore.textContent = this.padScore(this.highScore);
+
+    if (window.arcadePlatform) {
+      window.arcadePlatform.refreshHighScores();
+    }
 
     // Tauri Rust IPC
     try {
@@ -1297,11 +1394,25 @@ class SuperMarioGame {
       }
     } catch (e) {}
 
-    this.hud.classList.add('hidden');
-    this.gameOverScreen.classList.remove('hidden');
+    if (this.hud) this.hud.classList.add('hidden');
+    if (this.gameOverScreen) this.gameOverScreen.classList.remove('hidden');
+
+    // 若處於 AI Demo Mode，1.5 秒後自動重開新局繼續演示
+    if (this.isDemoMode) {
+      if (this.aiState.autoRestartTimer) clearTimeout(this.aiState.autoRestartTimer);
+      this.aiState.autoRestartTimer = setTimeout(() => {
+        if (this.isDemoMode && this.state === 'GAMEOVER' && this.isActiveGame) {
+          this.restartGame();
+        }
+      }, 1500);
+    }
   }
 
   restartGame() {
+    if (this.aiState.autoRestartTimer) {
+      clearTimeout(this.aiState.autoRestartTimer);
+      this.aiState.autoRestartTimer = null;
+    }
     this.score = 0;
     this.coins = 0;
     this.lives = 3;
@@ -1319,12 +1430,170 @@ class SuperMarioGame {
     this.initWorld();
     this.updateHUD();
 
-    this.pauseScreen.classList.add('hidden');
-    this.gameOverScreen.classList.add('hidden');
-    this.hud.classList.remove('hidden');
+    if (this.pauseScreen) this.pauseScreen.classList.add('hidden');
+    if (this.gameOverScreen) this.gameOverScreen.classList.add('hidden');
+    if (this.hud) this.hud.classList.remove('hidden');
 
     this.audio.startBgm();
     this.state = 'PLAYING';
+    this.syncDemoUI();
+  }
+
+  // ==========================================
+  // AI Demo Mode 智慧決策核心
+  // ==========================================
+  updateAIDemo(dt) {
+    const m = this.mario;
+    const groundY = this.baseH - TILE_SIZE * 2;
+
+    if (this.aiState.fireCooldown > 0) {
+      this.aiState.fireCooldown -= dt;
+    }
+
+    // 預設向右衝刺前進
+    this.input.left = false;
+    this.input.right = true;
+    this.input.down = false;
+    this.input.sprint = true;
+    this.aiState.actionLabel = 'SPRINTING FORWARD';
+
+    // 處理長按跳躍計時器 (確保跳得夠高)
+    if (this.aiState.jumpHoldTimer > 0) {
+      this.aiState.jumpHoldTimer -= dt;
+      this.input.jump = true;
+      if (m.isGrounded && this.aiState.jumpHoldTimer < 0.36) {
+        // 已落地，重置跳躍鍵以便下次起跳
+        this.input.jump = false;
+        this.aiState.jumpHoldTimer = 0;
+      }
+    } else {
+      this.input.jump = false;
+    }
+
+    const triggerHighJump = (label, hold = 0.45) => {
+      this.aiState.actionLabel = label;
+      if (m.isGrounded) {
+        this.input.jump = true;
+        this.aiState.jumpHoldTimer = hold;
+      } else if (m.vy < 0) {
+        this.input.jump = true;
+      }
+    };
+
+    // 1. 偵測前方道具 (Mushroom / FireFlower) 並優先拾取
+    const nearbyItem = this.items.find(it => it.x > m.x - 40 && it.x < m.x + 180 && it.y < this.baseH);
+    if (nearbyItem) {
+      this.aiState.actionLabel = 'CHASING POWERUP 🍄';
+      if (nearbyItem.x < m.x - 8) {
+        this.input.left = true;
+        this.input.right = false;
+      }
+      if (nearbyItem.y + nearbyItem.height < m.y + 8 && Math.abs(nearbyItem.x - m.x) < 45) {
+        triggerHighJump('JUMP FOR POWERUP 🍄', 0.38);
+      }
+    }
+
+    // 2. 偵測前方深淵斷崖 (Abyss Gap)
+    const probeNearX = m.x + m.width + 18;
+    const probeMidX = m.x + m.width + 44;
+    const hasGroundNear = this.tiles.some(
+      t => t.type === 'GROUND' && probeNearX >= t.x && probeNearX <= t.x + t.w
+    );
+    const hasGroundMid = this.tiles.some(
+      t => t.type === 'GROUND' && probeMidX >= t.x && probeMidX <= t.x + t.w
+    );
+
+    if (!hasGroundNear || !hasGroundMid) {
+      this.input.right = true;
+      this.input.left = false;
+      this.input.sprint = true;
+      triggerHighJump('LEAPING ABYSS 🕳️', 0.5);
+    }
+
+    // 3. 偵測前方水管與食人花 (Pipe & Piranha Plant)
+    const dangerPiranha = this.piranhas.find(
+      p => !p.isDead && p.pipeX + 64 > m.x && p.pipeX - (m.x + m.width) < 110
+    );
+    if (dangerPiranha) {
+      const distToPipe = dangerPiranha.pipeX - (m.x + m.width);
+      // 火焰形態直接發射火球消滅食人花
+      if (m.form === 'FIRE' && this.aiState.fireCooldown <= 0) {
+        this.shootFireball();
+        this.aiState.fireCooldown = 0.28;
+      }
+      // 若食人花正在鑽出或咬合，且馬力歐在地面水管前，短暫駐足等待食人花縮回
+      if (
+        (dangerPiranha.state === 'RISING' || dangerPiranha.state === 'BITING' || dangerPiranha.offsetY > 8) &&
+        m.isGrounded &&
+        distToPipe > 8 &&
+        distToPipe < 72
+      ) {
+        this.input.right = false;
+        this.input.sprint = false;
+        if (distToPipe < 22) this.input.left = true;
+        this.input.jump = false;
+        this.aiState.jumpHoldTimer = 0;
+        this.aiState.actionLabel = 'WAITING PIRANHA 🥀';
+        return;
+      }
+    }
+
+    // 4. 偵測前方水管或階梯磚塊阻擋 (Solid Obstacle Ahead)
+    const obstacleAhead = this.tiles.find(t => {
+      if (t.type !== 'PIPE' && t.type !== 'BRICK') return false;
+      const dx = t.x - (m.x + m.width);
+      const verticalOverlap = t.y < m.y + m.height - 2 && t.y + t.h > m.y - 24;
+      return dx >= -6 && dx <= 72 && verticalOverlap;
+    });
+
+    if (obstacleAhead) {
+      triggerHighJump('VAULTING OBSTACLE 🧱', 0.46);
+    }
+
+    // 5. 偵測前方怪物 (Goomba / Koopa)
+    const threatEnemy = this.enemies.find(e => {
+      if (e.isDead) return false;
+      const dx = e.x - (m.x + m.width);
+      return dx > -20 && dx < 125;
+    });
+
+    if (threatEnemy) {
+      const dx = threatEnemy.x - (m.x + m.width);
+      if (m.form === 'FIRE' && this.aiState.fireCooldown <= 0 && dx < 220) {
+        this.shootFireball();
+        this.aiState.fireCooldown = 0.25;
+        this.aiState.actionLabel = 'FIREBALL ATTACK 🔥';
+      }
+      if (dx < 76) {
+        triggerHighJump('STOMPING ENEMY 👟', 0.42);
+      }
+    }
+
+    // 6. 偵測頭頂問號磚塊 [?] 並跳躍頂擊
+    if (m.isGrounded && !threatEnemy && hasGroundNear) {
+      const questionTile = this.tiles.find(t => {
+        if (t.type !== 'QUESTION') return false;
+        const dx = (t.x + t.w / 2) - (m.x + m.width / 2);
+        return dx >= -8 && dx <= 34 && t.y < m.y && m.y - t.y < 135;
+      });
+      if (questionTile) {
+        triggerHighJump('HITTING [?] BLOCK 🪙', 0.4);
+      }
+    }
+
+    // 7. 防卡牆脫困保護
+    if (Math.abs(m.x - this.aiState.lastX) < 2) {
+      this.aiState.stuckTimer += dt;
+      if (this.aiState.stuckTimer > 0.35) {
+        this.input.right = true;
+        this.input.sprint = true;
+        triggerHighJump('UNSTUCK BOOST 🚀', 0.48);
+        this.aiState.stuckTimer = 0;
+      }
+    } else {
+      this.aiState.lastX = m.x;
+      this.aiState.stuckTimer = 0;
+    }
   }
 
   gameLoop(timestamp) {
@@ -1333,7 +1602,12 @@ class SuperMarioGame {
     const dt = Math.min((timestamp - this.lastTime) / 1000, 0.05);
     this.lastTime = timestamp;
 
+    if (!this.isActiveGame) return;
+
     if (this.state === 'PLAYING') {
+      if (this.isDemoMode) {
+        this.updateAIDemo(dt);
+      }
       this.update(dt);
     } else if (this.state === 'CLEARING') {
       this.updateClearing(dt);
@@ -1853,10 +2127,37 @@ class SuperMarioGame {
 
     // 10. 浮動得分文字
     this.floatTexts.forEach(t => t.draw(ctx, this.cameraX));
+
+    // 11. AI Demo Mode 視覺狀態面板
+    if (this.isDemoMode && this.state === 'PLAYING') {
+      ctx.save();
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.72)';
+      ctx.fillRect(14, 54, 250, 34);
+      ctx.strokeStyle = '#00ff88';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(14, 54, 250, 34);
+
+      // 閃爍 AI 綠燈
+      if (Math.floor(Date.now() / 300) % 2 === 0) {
+        ctx.fillStyle = '#00ff88';
+        ctx.beginPath();
+        ctx.arc(26, 65, 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.fillStyle = '#00ff88';
+      ctx.font = 'bold 9px "Press Start 2P", monospace';
+      ctx.fillText('AI DEMO AUTO-PLAY', 36, 68);
+
+      ctx.fillStyle = '#fcd116';
+      ctx.font = 'bold 8px "Press Start 2P", monospace';
+      ctx.fillText(`ACT: ${this.aiState.actionLabel}`, 22, 82);
+      ctx.restore();
+    }
   }
 }
 
-// 實例化遊戲
+// 實例化遊戲並掛載至全域供平台切換管理
 window.addEventListener('DOMContentLoaded', () => {
-  new SuperMarioGame();
+  window.marioGame = new SuperMarioGame();
 });
